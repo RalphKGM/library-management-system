@@ -1,0 +1,17 @@
+from pathlib import Path
+
+from flask import Flask
+
+
+def create_app(test_config=None):
+    app = Flask(__name__, instance_relative_config=True, static_folder=None)
+    app.config.from_mapping(
+        DATABASE=str(Path(app.instance_path) / "library.sqlite3")
+    )
+
+    if test_config:
+        app.config.update(test_config)
+
+    from .routes import api
+    app.register_blueprint(api)
+    return app

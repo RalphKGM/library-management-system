@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS member (
     full_name TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('member', 'librarian')),
     registered_at TEXT NOT NULL
 );
 

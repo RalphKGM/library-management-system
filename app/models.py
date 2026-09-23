@@ -10,6 +10,19 @@ class Member:
     username: str
     password_hash: str
     registered_at: str
+    role: str = "member"
+
+    def to_dict(self, include_password: bool = False) -> dict:
+        data = {
+            "member_id": self.member_id,
+            "full_name": self.full_name,
+            "username": self.username,
+            "role": self.role,
+            "registered_at": self.registered_at,
+        }
+        if include_password:
+            data["password_hash"] = self.password_hash
+        return data
 
 
 @dataclass

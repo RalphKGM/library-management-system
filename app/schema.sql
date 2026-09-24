@@ -21,7 +21,10 @@ CREATE TABLE IF NOT EXISTS media_item (
     category TEXT NOT NULL,
     volume TEXT,
     progress_unit TEXT NOT NULL,
-    total_units INTEGER
+    total_units INTEGER,
+    description TEXT NOT NULL DEFAULT '',
+    cover TEXT NOT NULL DEFAULT 'catalog-placeholder.svg',
+    added_at TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS media_copy (
@@ -37,6 +40,9 @@ CREATE TABLE IF NOT EXISTS borrowing_record (
     borrowed_at TEXT NOT NULL,
     returned_at TEXT
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_borrowing_per_copy
+ON borrowing_record (copy_id) WHERE returned_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS reading_progress (
     progress_id INTEGER PRIMARY KEY,

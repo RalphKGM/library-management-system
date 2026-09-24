@@ -1,11 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Register · The Reading Room{% endblock %}
+{% block title %}Join the library · The Reading Room{% endblock %}
 {% block content %}
 <section class="auth-shell shell">
-  <div class="auth-intro"><span class="eyebrow">Library membership</span><h1>Create your account.</h1><p>A member account will let you manage borrowings and reading progress.</p><div class="auth-art" aria-hidden="true"><span>Explore</span><span>Save</span><span>Read</span></div></div>
-  <div class="auth-card"><h2>Register</h2><p class="form-note">Registration through the website is still being connected.</p>
-    <form><div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" disabled></div><div class="field"><label for="username">Username</label><input id="username" name="username" autocomplete="username" disabled></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" disabled></div><button class="button button-full" type="button" disabled>Registration coming soon</button></form>
-    <p class="auth-switch">Already a member? <a href="{{ url_for('login') }}">View sign in</a></p>
+  <div class="auth-intro"><span class="eyebrow">Library membership</span><h1>Make room for more stories.</h1><p>Create a free member account to borrow available copies and keep track of your reading.</p><div class="auth-art" aria-hidden="true"><span>Manga</span><span>Comics</span><span>Literature</span></div></div>
+  <div class="auth-card"><h2>Join the library</h2>
+    <form action="{{ url_for('register') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" value="{{ request.form.get('name', '') }}" required></div>
+      <div class="field"><label for="username">Username</label><input id="username" name="username" autocomplete="username" value="{{ request.form.get('username', '') }}" required></div>
+      <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><p class="field-help">Use at least 8 characters.</p></div>
+      <button class="button button-full" type="submit">Create member account</button>
+    </form>
+    <p class="auth-switch">Already a member? <a href="{{ url_for('login') }}">Sign in</a></p>
   </div>
 </section>
 {% endblock %}

@@ -1,14 +1,9 @@
-# Tests to write during implementation
+# Tests
 
-- Registered member can borrow an available copy.
-- Unknown member cannot borrow a copy.
-- Two simultaneous requests cannot borrow the same copy.
-- A return makes the copy available; a repeated return is rejected.
-- Duplicate usernames and accession numbers are rejected.
-- Reading progress is unique per member and title.
-- Page or chapter positions cannot be negative or exceed a known total.
-- A member cannot change another member's bookmarks or progress.
-- Password verification and librarian permissions are enforced.
-- Pure helper functions leave input collections unchanged.
+Run the application tests from the project root:
 
-No feature tests or completed feature implementations are included yet.
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+The tests exercise registration and sign in, role restricted pages and API routes, CSRF protection, catalog management, borrowing and returns, reading progress, bookmarks, and member ownership checks. Each test uses a temporary SQLite database.

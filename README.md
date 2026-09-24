@@ -2,36 +2,20 @@
 
 Group 2 | Principles of Programming Languages
 
-A library system for manga, comics, novels, magazines and graphic novels
+A Flask and SQLite library for manga, comics, literature, novels, magazines, and graphic novels. Registered members can borrow available physical copies for free. Librarians manage titles and copies. There are no fees or payment features.
 
-Members can register and log in. Librarians can manage titles and physical copies. The project uses Flask and SQLite
+## Run locally
 
-## What works now
-
-- Create the database with the `init-db` command
-- Register and authenticate members with hashed passwords
-- Create and authenticate librarian accounts
-- Add, update and search media titles
-- Add physical copies and check which copies are available
-- Check that the server is running at `/api/health`
-- Browse the collection through the new responsive website at `/`
-- View title details, member area, sign-in and registration layouts, and the librarian workspace
-
-The browse page reads real titles and copy availability from SQLite. While the database has no titles, it displays clearly labeled sample works to preview the design. Member and catalog service functions do not have API routes yet. Website forms are visual previews, and borrowing, returns, reading progress and bookmarks are still being built
-
-## How to run
-
-You need Python 3.9 or newer
+Use Python 3.9 or newer.
 
 ### macOS or Linux
-
-Open a terminal in this project folder and run
 
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python -m flask --app app init-db
+python -m flask --app app seed-sample
 python -m flask --app app run --debug
 ```
 
@@ -42,41 +26,52 @@ py -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python -m flask --app app init-db
+python -m flask --app app seed-sample
 python -m flask --app app run --debug
 ```
 
-Open http://127.0.0.1:5000/ in your browser to see the website. The health endpoint remains at http://127.0.0.1:5000/api/health
+Open http://127.0.0.1:5000/. The `seed-sample` step is optional and only works when the catalog is empty. It adds fictional starter titles and physical copies so the browse pages can be explored. You can leave it out and add your own titles as a librarian.
 
-Press Ctrl+C in the terminal to stop the server. When you run it again later you only need to activate the virtual environment and run the last command
+To create a librarian account, run `python -m flask --app app create-librarian` and enter a username and password when prompted. Member accounts are created through the website. The librarian command does not create a public registration route for staff.
+
+## What each role can use
+
+| Role | Pages and actions |
+| --- | --- |
+| Guest | Browse and search the catalog, view title details, register, sign in |
+| Member | Guest pages plus My Library, borrowing, returns, reading progress, and bookmarks |
+| Librarian | Guest pages plus catalog management, title editing, and copy creation |
+
+Navigation shows the pages for the signed-in role. The server also checks permissions on every protected page and action. Member and librarian accounts use separate sign-in options.
+
+## API
+
+The JSON API includes catalog browsing, member registration and sessions, borrowing and returns, reading progress, bookmarks, and librarian catalog actions. `GET /api/health` returns `{"status":"ok"}`.
+
+For API writes, first call `GET /api/session`. Send its `csrf_token` in the `X-CSRF-Token` header. Sign-in returns a new token for later writes. The API uses the same session cookie as the website.
+
+## Tests
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+Tests cover public browsing, role restrictions, form token checks, librarian edits, member borrowing and returns, reading activity, and API access.
 
 ## Project files
 
 ```text
 app/
-  __init__.py       Flask app setup
-  db.py             SQLite connection and database setup
-  schema.sql        Database tables
-  routes.py         Health endpoint
-  models.py         Record classes
-  ui.py             Website pages and database catalog display
-  demo_catalog.py   Clearly labeled sample works for an empty database
-  templates/        Website layouts and page templates
-  static/           Styles, JavaScript and sample cover art
-  services/
-    members.py      Members and librarians
-    media.py        Titles and copies
-    borrowing.py    Borrowing and returns to build
-    reading.py      Progress and bookmarks to build
-    helpers.py      Helper functions to build
+  __init__.py       Flask setup and session secret
+  db.py             SQLite setup and CLI commands
+  schema.sql        Database tables and active-copy constraint
+  security.py       Session identity, role checks, and form tokens
+  routes.py         JSON API
+  ui.py             Website pages and form actions
+  sample_catalog.py Optional starter titles
+  services/         Member, media, borrowing, and reading operations
+  templates/        Website pages
+  static/           CSS, JavaScript, and cover illustrations
 tests/
-  README.md         Test ideas
-requirements.txt   Python packages
+  test_app.py       Workflow and role tests
 ```
-
-## Next steps
-
-1. Build borrowing and returns
-2. Build reading progress and bookmarks
-3. Connect website forms, API routes, login sessions, validation and tests
-
-Borrowing has no fee. There are no payment features in this project

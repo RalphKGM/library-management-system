@@ -1,10 +1,11 @@
 import sqlite3
+from datetime import datetime, timezone
 
 from app.db import get_db
 from app.services.members import require_librarian
 
 
-FIELDS = ("title", "author", "category", "volume", "progress_unit", "total_units")
+FIELDS = ("title", "author", "category", "volume", "progress_unit", "total_units", "description", "cover")
 
 
 def _validate(details):
@@ -24,7 +25,17 @@ def _validate(details):
             raise ValueError("total_units must be positive")
     if "volume" in details and details["volume"] is not None and not isinstance(details["volume"], str):
         raise ValueError("volume must be text")
+    if "description" in details and (not isinstance(details["description"], str) or len(details["description"]) > 2000):
+        raise ValueError("description must be at most 2000 characters")
+    if "cover" in details and details["cover"] not in _cover_options():
+        raise ValueError("invalid cover image")
     return details
+
+
+def _cover_options():
+    from pathlib import Path
+
+    return {path.name for path in (Path(__file__).resolve().parents[1] / "static/images/covers").glob("*.svg")}
 
 
 def add_media(details, librarian_id):
@@ -35,8 +46,8 @@ def add_media(details, librarian_id):
             raise ValueError(f"{field} is required")
     db = get_db()
     cursor = db.execute(
-        "INSERT INTO media_item (title, author, category, volume, progress_unit, total_units) VALUES (?, ?, ?, ?, ?, ?)",
-        (data["title"], data["author"], data["category"], data.get("volume"), data.get("progress_unit", "page"), data.get("total_units")),
+        "INSERT INTO media_item (title, author, category, volume, progress_unit, total_units, description, cover, added_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (data["title"], data["author"], data["category"], data.get("volume"), data.get("progress_unit", "page"), data.get("total_units"), data.get("description", ""), data.get("cover", "catalog-placeholder.svg"), datetime.now(timezone.utc).isoformat()),
     )
     db.commit()
     return dict(db.execute("SELECT * FROM media_item WHERE media_id = ?", (cursor.lastrowid,)).fetchone())
@@ -50,6 +61,15 @@ def update_media(media_id, changes, librarian_id):
     db = get_db()
     if not db.execute("SELECT 1 FROM media_item WHERE media_id = ?", (media_id,)).fetchone():
         return None
+    if data.get("total_units") is not None:
+        highest = db.execute(
+            "SELECT MAX(position) FROM ("
+            "SELECT current_position AS position FROM reading_progress WHERE media_id = ? "
+            "UNION ALL SELECT position FROM bookmark WHERE media_id = ?)",
+            (media_id, media_id),
+        ).fetchone()[0]
+        if highest is not None and data["total_units"] < highest:
+            raise ValueError("total units cannot be below saved reading positions")
     columns = ", ".join(f"{key} = ?" for key in data)
     db.execute(f"UPDATE media_item SET {columns} WHERE media_id = ?", (*data.values(), media_id))
     db.commit()

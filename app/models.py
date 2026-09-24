@@ -20,6 +20,9 @@ class MediaItem:
     volume: Optional[str] = None
     progress_unit: str = "page"
     total_units: Optional[int] = None
+    description: str = ""
+    cover: str = "catalog-placeholder.svg"
+    added_at: Optional[str] = None
 
 
 @dataclass

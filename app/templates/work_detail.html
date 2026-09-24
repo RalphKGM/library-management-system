@@ -1,18 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{{ work.title }} · The Reading Room{% endblock %}
 {% block content %}
-{% if demo %}<div class="demo-banner shell"><strong>Design preview</strong> This is a sample title, not a library record.</div>{% endif %}
 <section class="shell detail-page">
   <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('browse') }}">Browse</a><span>/</span><a href="{{ url_for('browse', category=work.category) }}">{{ work.category }}</a><span>/</span><span aria-current="page">{{ work.title }}</span></nav>
   <div class="detail-grid">
     <div class="detail-cover-wrap"><img class="detail-cover" src="{{ url_for('static', filename='images/covers/' ~ work.cover) }}" alt="Cover artwork for {{ work.title }}"></div>
     <div class="detail-main">
       <div class="detail-kicker"><span>{{ work.category }}</span>{% if work.volume %}<span>{{ work.volume }}</span>{% endif %}</div>
-      <h1>{{ work.title }}</h1><p class="detail-author">by {{ work.author }}</p><p class="detail-description">{{ work.description }}</p>
-      <dl class="detail-facts"><div><dt>Copies</dt><dd>{{ work.available }} available of {{ work.copies }}</dd></div>{% if work.length %}<div><dt>Reading length</dt><dd>{{ work.length }}</dd></div>{% endif %}<div><dt>Format</dt><dd>Physical copy</dd></div></dl>
+      <h1>{{ work.title }}</h1><p class="detail-author">by {{ work.author }}</p>
+      {% if work.description %}<p class="detail-description">{{ work.description }}</p>{% endif %}
+      <dl class="detail-facts"><div><dt>Copies</dt><dd>{{ work.available }} available of {{ work.copies }}</dd></div>{% if work.length %}<div><dt>Length</dt><dd>{{ work.length }}</dd></div>{% endif %}<div><dt>Format</dt><dd>Physical copy</dd></div></dl>
       <div class="borrow-panel">
-        {% if work.available > 0 %}<div><p class="availability available large"><span aria-hidden="true"></span>{% if demo %}Sample availability{% else %}Available copy{% endif %}</p><p>{{ work.available }} physical cop{% if work.available == 1 %}y is{% else %}ies are{% endif %} shown as available. Borrowing will be added when that service is complete.</p></div><button class="button button-large" type="button" disabled>Borrowing coming soon</button>{% else %}<div><p class="availability unavailable large"><span aria-hidden="true"></span>Currently unavailable</p><p>No physical copies are available right now.</p></div><button class="button button-large" type="button" disabled>Borrow unavailable</button>{% endif %}
+        <div>{% if work.available %}<p class="availability available large"><span aria-hidden="true"></span>Available to borrow</p><p>{{ work.available }} physical cop{% if work.available == 1 %}y{% else %}ies{% endif %} available.</p>{% else %}<p class="availability unavailable large"><span aria-hidden="true"></span>Currently unavailable</p><p>All physical copies are currently borrowed.</p>{% endif %}</div>
+        {% if borrowed %}<a class="button button-large" href="{{ url_for('member') }}">View in My Library</a>{% elif work.available and current_user and current_user.role == 'member' %}<form action="{{ url_for('borrow', media_id=work.media_id) }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-large" type="submit">Borrow a copy</button></form>{% elif work.available and not current_user %}<a class="button button-large" href="{{ url_for('login') }}">Sign in to borrow</a>{% elif not work.available %}<button class="button button-large" type="button" disabled>Unavailable</button>{% endif %}
       </div>
+      {% if current_user and current_user.role == 'member' %}
+      <div class="reader-tools">
+        <section class="reader-tool"><h2>Reading progress</h2><p>Save your current page or chapter.</p><form action="{{ url_for('save_progress', media_id=work.media_id) }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="field"><label for="position">Current {{ work.progress_unit }}</label><input id="position" name="position" type="number" min="0" {% if work.total_units %}max="{{ work.total_units }}"{% endif %} value="{{ progress.current_position if progress else 0 }}" required></div><div class="field"><label for="status">Status</label><select id="status" name="status"><option value="not_started" {% if progress and progress.status == 'not_started' %}selected{% endif %}>Not started</option><option value="reading" {% if progress and progress.status == 'reading' %}selected{% endif %}>Reading</option><option value="completed" {% if progress and progress.status == 'completed' %}selected{% endif %}>Completed</option></select></div><button class="button button-secondary" type="submit">Save progress</button></form></section>
+        <section class="reader-tool"><h2>Bookmarks</h2><p>Keep a page or chapter to revisit.</p><form action="{{ url_for('save_bookmark', media_id=work.media_id) }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="field"><label for="bookmark-position">{{ work.progress_unit|capitalize }} number</label><input id="bookmark-position" name="position" type="number" min="0" {% if work.total_units %}max="{{ work.total_units }}"{% endif %} required></div><div class="field"><label for="note">Note (optional)</label><input id="note" name="note" maxlength="500"></div><button class="button button-secondary" type="submit">Add bookmark</button></form>{% if bookmarks %}<p class="saved-bookmarks">Saved: {% for mark in bookmarks %}{{ mark.position }}{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}</section>
+      </div>
+      {% endif %}
     </div>
   </div>
 </section>

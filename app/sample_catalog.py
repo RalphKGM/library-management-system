@@ -1,4 +1,4 @@
-DEMO_WORKS = [
+SAMPLE_WORKS = [
     {"slug":"moonlit-archive","title":"The Moonlit Archive","author":"Aiko Mori","category":"Manga","volume":"Vol. 1","description":"A quiet fantasy about a night librarian who discovers that unfinished stories keep changing after midnight.","copies":3,"available":2,"length":"192 pages","cover":"moonlit-archive.svg","featured":True,"popular":True,"recent":False},
     {"slug":"city-after-rain","title":"City After Rain","author":"Noah Bell","category":"Graphic Novels","volume":"","description":"Two strangers cross paths across a rain-soaked city in a reflective graphic novel about memory and second chances.","copies":2,"available":1,"length":"224 pages","cover":"city-after-rain.svg","featured":True,"popular":False,"recent":True},
     {"slug":"orbit-house","title":"Orbit House","author":"Mina Vale","category":"Comics","volume":"Issue 07","description":"A found-family science fiction series set aboard a station that should have been decommissioned years ago.","copies":4,"available":0,"length":"48 pages","cover":"orbit-house.svg","featured":False,"popular":True,"recent":False},

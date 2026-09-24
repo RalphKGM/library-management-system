@@ -6,13 +6,13 @@ Backend starter for a member-based library of manga, comics, novels, magazines, 
 
 ## What is included
 
-- A Flask application factory and `/api/health` endpoint.
-- Simple Python record classes matching the proposed ERD.
-- Function signatures for the group to implement.
-- A SQLite schema starting point and database helper placeholders.
-- Repository ignore rules and setup instructions.
+- Flask application factory, health endpoint, and explicit `init-db` command.
+- SQLite database helpers and schema.
+- Member registration and authentication with hashed passwords.
+- Trusted librarian account creation and authentication.
+- Librarian-gated catalog and physical-copy service functions.
 
-This is a scaffold, not a working library system. Authentication, database operations, borrowing rules, validation, search, progress, and bookmarks are not implemented. Placeholder functions raise `NotImplementedError`. No frontend files, templates, styles, or scripts are included or modified.
+Borrowing, reading progress, bookmarks, and feature routes remain planned. Service functions are Python APIs; no login sessions or HTTP permission checks are implemented yet.
 
 ## Run locally
 
@@ -22,6 +22,7 @@ Use Python 3.9 or newer. From this folder:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+python -m flask --app app init-db
 python -m flask --app app run --debug
 ```
 
@@ -36,11 +37,11 @@ app/
   __init__.py         Flask setup
   routes.py           health route and future endpoint notes
   models.py           library record classes
-  db.py               SQLite helper stubs
-  schema.sql          proposed SQLite table definitions
+  db.py               SQLite connection and initialization
+  schema.sql          SQLite table definitions
   services/
-    members.py        membership and login stubs
-    media.py          catalog and copy stubs
+    members.py        member and librarian services
+    media.py          catalog and copy services
     borrowing.py      borrowing and return stubs
     reading.py        progress and bookmark stubs
     helpers.py        pure function stubs
@@ -52,14 +53,12 @@ requirements.txt
 
 ## Suggested implementation order
 
-1. Review `schema.sql`, implement `db.py`, and initialize the database.
-2. Implement membership and authentication, including password hashing and librarian permissions.
-3. Implement catalog and physical-copy management.
-4. Implement borrowing and returns. Confirm membership and copy availability; prevent two active borrowings of the same copy atomically.
-5. Implement reading progress, bookmarks, and pure helper functions.
-6. Add Flask endpoints, validation, error responses, and tests. Connect your frontend when ready.
+1. Database initialization, membership, authentication, and catalog services are implemented.
+2. Implement borrowing and returns. Confirm membership and copy availability; prevent two active borrowings of the same copy atomically.
+3. Implement reading progress, bookmarks, and pure helper functions.
+4. Add Flask endpoints, validation, error responses, and tests. Connect your frontend when ready.
 
-`Member` represents borrowers. Librarian authentication is intentionally left for implementation; no administrative account or access rule is preconfigured. Dates are stored as ISO-formatted text in the proposed SQLite schema. Progress and bookmarks belong to a member and title, so they can remain after a copy is returned. No payment or financial transaction features are planned.
+`Member` represents borrowers. Create a librarian account through the trusted `create_librarian` Python service during setup. Catalog mutations require a librarian ID. This service-level check does not replace authenticated HTTP sessions when routes are added. Dates are stored as ISO-formatted text in the proposed SQLite schema. Progress and bookmarks belong to a member and title, so they can remain after a copy is returned. No payment or financial transaction features are planned.
 
 ## Start your repository
 

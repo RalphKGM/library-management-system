@@ -12,6 +12,9 @@ def create_app(test_config=None):
     if test_config:
         app.config.update(test_config)
 
+    from . import db
+    db.init_app(app)
+
     from .routes import api
     app.register_blueprint(api)
     return app

@@ -1,5 +1,3 @@
--- proposed schema only; it is not executed automatically.
--- todo: review validation rules, indexes, and migrations before implementation.
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS member (
@@ -8,6 +6,12 @@ CREATE TABLE IF NOT EXISTS member (
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     registered_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS librarian (
+    librarian_id INTEGER PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS media_item (

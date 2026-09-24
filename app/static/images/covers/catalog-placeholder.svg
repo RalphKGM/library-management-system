@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" role="img" aria-label="Library book cover placeholder">
+  <rect width="400" height="600" fill="#d6c5ae"/>
+  <rect x="20" y="20" width="360" height="560" rx="5" fill="#efe7d8" stroke="#a88f77" stroke-width="2"/>
+  <path d="M70 105h260M70 495h260" stroke="#a88f77" stroke-width="2"/>
+  <circle cx="200" cy="285" r="90" fill="#7d2f35"/>
+  <path d="M145 252c22-10 40-10 55 1 15-11 33-11 55-1v68c-22-10-40-10-55 1-15-11-33-11-55-1z" fill="none" stroke="#fff8ec" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M200 253v68" stroke="#fff8ec" stroke-width="8"/>
+  <text x="200" y="433" text-anchor="middle" fill="#554334" font-family="Georgia,serif" font-size="26">THE READING ROOM</text>
+</svg>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Sign in · The Reading Room{% endblock %}
+{% block content %}
+<section class="auth-shell shell">
+  <div class="auth-intro"><span class="eyebrow">Member access</span><h1>Welcome back.</h1><p>Sign in to view your borrowings, reading progress, and saved positions.</p><div class="auth-art" aria-hidden="true"><span>Read</span><span>Borrow</span><span>Return</span></div></div>
+  <div class="auth-card"><h2>Sign in</h2><p class="form-note">The account service exists, but sign-in through the website is still being connected.</p>
+    <form><div class="field"><label for="username">Username</label><input id="username" name="username" autocomplete="username" disabled></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" disabled></div><button class="button button-full" type="button" disabled>Sign in coming soon</button></form>
+    <p class="auth-switch">New to the library? <a href="{{ url_for('register') }}">View registration</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,6 @@
+<div class="empty-state">
+  <span class="empty-icon" aria-hidden="true">◇</span>
+  <h3>{{ title }}</h3>
+  <p>{{ body }}</p>
+  {% if href and action %}<a class="button button-secondary" href="{{ href }}">{{ action }}</a>{% endif %}
+</div>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ work.title }} · The Reading Room{% endblock %}
+{% block content %}
+{% if demo %}<div class="demo-banner shell"><strong>Design preview</strong> This is a sample title, not a library record.</div>{% endif %}
+<section class="shell detail-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('browse') }}">Browse</a><span>/</span><a href="{{ url_for('browse', category=work.category) }}">{{ work.category }}</a><span>/</span><span aria-current="page">{{ work.title }}</span></nav>
+  <div class="detail-grid">
+    <div class="detail-cover-wrap"><img class="detail-cover" src="{{ url_for('static', filename='images/covers/' ~ work.cover) }}" alt="Cover artwork for {{ work.title }}"></div>
+    <div class="detail-main">
+      <div class="detail-kicker"><span>{{ work.category }}</span>{% if work.volume %}<span>{{ work.volume }}</span>{% endif %}</div>
+      <h1>{{ work.title }}</h1><p class="detail-author">by {{ work.author }}</p><p class="detail-description">{{ work.description }}</p>
+      <dl class="detail-facts"><div><dt>Copies</dt><dd>{{ work.available }} available of {{ work.copies }}</dd></div>{% if work.length %}<div><dt>Reading length</dt><dd>{{ work.length }}</dd></div>{% endif %}<div><dt>Format</dt><dd>Physical copy</dd></div></dl>
+      <div class="borrow-panel">
+        {% if work.available > 0 %}<div><p class="availability available large"><span aria-hidden="true"></span>{% if demo %}Sample availability{% else %}Available copy{% endif %}</p><p>{{ work.available }} physical cop{% if work.available == 1 %}y is{% else %}ies are{% endif %} shown as available. Borrowing will be added when that service is complete.</p></div><button class="button button-large" type="button" disabled>Borrowing coming soon</button>{% else %}<div><p class="availability unavailable large"><span aria-hidden="true"></span>Currently unavailable</p><p>No physical copies are available right now.</p></div><button class="button button-large" type="button" disabled>Borrow unavailable</button>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% if related %}<section class="shell section-block related-section"><div class="section-heading"><div><span class="eyebrow">More on this shelf</span><h2>Related works</h2></div></div><div class="cover-grid related-grid">{% for work in related %}{% include "partials/_cover_card.html" %}{% endfor %}</div></section>{% endif %}
+{% endblock %}

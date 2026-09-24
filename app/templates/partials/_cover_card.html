@@ -1,0 +1,15 @@
+<article class="cover-card">
+  <a class="cover-link" href="{{ url_for('work_detail', slug=work.slug) }}" aria-label="View {{ work.title }} by {{ work.author }}">
+    <img class="cover-image" src="{{ url_for('static', filename='images/covers/' ~ work.cover) }}" alt="Cover artwork for {{ work.title }}">
+  </a>
+  <div class="cover-card-body">
+    <div class="cover-meta"><span>{{ work.category }}</span>{% if work.volume %}<span>{{ work.volume }}</span>{% endif %}</div>
+    <h3><a href="{{ url_for('work_detail', slug=work.slug) }}">{{ work.title }}</a></h3>
+    <p class="author">{{ work.author }}</p>
+    {% if work.available > 0 %}
+      <p class="availability available"><span aria-hidden="true"></span>{{ work.available }} of {{ work.copies }} available</p>
+    {% else %}
+      <p class="availability unavailable"><span aria-hidden="true"></span>No copies available</p>
+    {% endif %}
+  </div>
+</article>

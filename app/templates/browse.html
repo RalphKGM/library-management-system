@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Browse · The Reading Room{% endblock %}
+{% block content %}
+{% if demo %}<div class="demo-banner shell"><strong>Design preview</strong> These sample titles show how the catalog will look. Add titles through the project database to display your own collection.</div>{% endif %}
+<section class="hero shell">
+  <div class="hero-copy">
+    <span class="eyebrow">Explore the collection</span>
+    <h1>Find your next story on the shelf.</h1>
+    <p>Browse manga, comics, literature, novels, magazines, and graphic novels with copy availability visible at a glance.</p>
+    <form class="hero-search" action="{{ url_for('browse') }}" method="get" role="search">
+      <label class="sr-only" for="hero-q">Search the catalog</label>
+      <input id="hero-q" name="q" type="search" value="{{ query }}" placeholder="Search by title, author, or category">
+      <button class="button" type="submit">Search catalog</button>
+    </form>
+    <div class="hero-stats" aria-label="Collection highlights"><span><strong>{{ works|length }}</strong> {% if demo %}sample{% endif %} titles</span><span><strong>{{ categories|length }}</strong> categories</span><span><strong>{{ works|sum(attribute='available') }}</strong> {% if demo %}sample{% endif %} copies available</span></div>
+  </div>
+  <div class="hero-art" aria-label="Featured covers">
+    {% for work in featured[:3] %}
+      <a href="{{ url_for('work_detail', slug=work.slug) }}" class="hero-cover hero-cover-{{ loop.index }}"><img src="{{ url_for('static', filename='images/covers/' ~ work.cover) }}" alt="{{ work.title }} cover"></a>
+    {% endfor %}
+    <div class="hero-note"><span>Featured shelf</span><strong>Stories for slow afternoons</strong></div>
+  </div>
+</section>
+<section class="category-strip" aria-label="Browse categories">
+  <div class="shell category-scroll">
+    {% for category in categories %}<a href="{{ url_for('browse', category=category) }}">{{ category }}</a>{% endfor %}
+  </div>
+</section>
+<section class="shell section-block">
+  <div class="section-heading"><div><span class="eyebrow">Curated shelf</span><h2>Featured selections</h2></div><a class="text-link" href="#catalog">View full catalog</a></div>
+  <div class="cover-grid cover-grid-featured">{% for work in featured %}{% include "partials/_cover_card.html" %}{% endfor %}</div>
+</section>
+<section class="editorial-band">
+  <div class="shell editorial-grid">
+    <div class="editorial-copy"><span class="eyebrow">Library spotlight</span><h2>Small press, big worlds.</h2><p>Discover illustrated stories and independent voices across formats. Browse by category or start with what is available today.</p><a class="button button-secondary" href="{{ url_for('browse', sort='availability') }}">See available now</a></div>
+    <div class="editorial-mosaic" aria-hidden="true"><div class="mosaic-panel mosaic-a"></div><div class="mosaic-panel mosaic-b"></div><div class="mosaic-panel mosaic-c"></div><span>Read widely.</span></div>
+  </div>
+</section>
+<section class="shell section-block compact-block">
+  <div class="section-heading"><div><span class="eyebrow">Explore more</span><h2>{% if demo %}Popular works{% else %}More from the collection{% endif %}</h2></div></div>
+  <div class="cover-grid">{% for work in popular %}{% include "partials/_cover_card.html" %}{% endfor %}</div>
+</section>
+<section class="shell section-block compact-block">
+  <div class="section-heading"><div><span class="eyebrow">Browse the shelves</span><h2>{% if demo %}Recently added{% else %}More titles{% endif %}</h2></div></div>
+  <div class="cover-grid">{% for work in recent %}{% include "partials/_cover_card.html" %}{% endfor %}</div>
+</section>
+<section class="shell section-block" id="catalog">
+  <div class="section-heading catalog-heading"><div><span class="eyebrow">All titles</span><h2>Browse the catalog</h2></div><span class="result-count">{{ filtered|length }} result{% if filtered|length != 1 %}s{% endif %}</span></div>
+  <form class="catalog-toolbar" method="get">
+    <div class="field grow"><label for="q">Search</label><input id="q" name="q" type="search" value="{{ query }}" placeholder="Title, author, category"></div>
+    <div class="field"><label for="category">Category</label><select id="category" name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category }}" {% if active_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="sort">Sort</label><select id="sort" name="sort"><option value="title" {% if sort == 'title' %}selected{% endif %}>Title A–Z</option><option value="availability" {% if sort == 'availability' %}selected{% endif %}>Availability</option><option value="recent" {% if sort == 'recent' %}selected{% endif %}>Recently added</option></select></div>
+    <button class="button toolbar-button" type="submit">Apply</button>
+  </form>
+  {% if filtered %}<div class="cover-grid catalog-grid">{% for work in filtered %}{% include "partials/_cover_card.html" %}{% endfor %}</div>{% else %}{% set title='No titles found' %}{% set body='Try a broader search or choose a different category.' %}{% set href=url_for('browse') %}{% set action='Clear filters' %}{% include 'partials/_empty_state.html' %}{% endif %}
+</section>
+<section class="shell section-block browse-categories">
+  <div class="section-heading"><div><span class="eyebrow">Browse another way</span><h2>By category</h2></div></div>
+  <div class="category-cards">{% for category in categories %}<a href="{{ url_for('browse', category=category) }}"><span>{{ '%02d'|format(loop.index) }}</span><strong>{{ category }}</strong><small>Explore shelf →</small></a>{% endfor %}</div>
+</section>
+{% endblock %}

@@ -14,8 +14,10 @@ Members can register and log in. Librarians can manage titles and physical copie
 - Add, update and search media titles
 - Add physical copies and check which copies are available
 - Check that the server is running at `/api/health`
+- Browse the collection through the new responsive website at `/`
+- View title details, member area, sign-in and registration layouts, and the librarian workspace
 
-The member and catalog features currently run through Python service functions. They do not have API routes yet. Borrowing, returns, reading progress and bookmarks are still being built
+The browse page reads real titles and copy availability from SQLite. While the database has no titles, it displays clearly labeled sample works to preview the design. Member and catalog service functions do not have API routes yet. Website forms are visual previews, and borrowing, returns, reading progress and bookmarks are still being built
 
 ## How to run
 
@@ -43,9 +45,9 @@ python -m flask --app app init-db
 python -m flask --app app run --debug
 ```
 
-Open http://127.0.0.1:5000/api/health in your browser. You should see `{"status":"ok"}`
+Open http://127.0.0.1:5000/ in your browser to see the website. The health endpoint remains at http://127.0.0.1:5000/api/health
 
-There is no homepage yet so opening http://127.0.0.1:5000/ will show a 404. Press Ctrl+C in the terminal to stop the server. When you run it again later you only need to activate the virtual environment and run the last command
+Press Ctrl+C in the terminal to stop the server. When you run it again later you only need to activate the virtual environment and run the last command
 
 ## Project files
 
@@ -56,6 +58,10 @@ app/
   schema.sql        Database tables
   routes.py         Health endpoint
   models.py         Record classes
+  ui.py             Website pages and database catalog display
+  demo_catalog.py   Clearly labeled sample works for an empty database
+  templates/        Website layouts and page templates
+  static/           Styles, JavaScript and sample cover art
   services/
     members.py      Members and librarians
     media.py        Titles and copies
@@ -71,6 +77,6 @@ requirements.txt   Python packages
 
 1. Build borrowing and returns
 2. Build reading progress and bookmarks
-3. Add API routes, login sessions, validation and tests
+3. Connect website forms, API routes, login sessions, validation and tests
 
 Borrowing has no fee. There are no payment features in this project

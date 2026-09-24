@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-# record containers only; persistence and validation are not implemented.
 @dataclass
 class Member:
     member_id: int

@@ -46,7 +46,6 @@ def get_member(member_id):
 
 
 def create_librarian(username, password):
-    """Create an administrative account during trusted setup."""
     username = _required(username, "username")
     password = _required(password, "password")
     db = get_db()

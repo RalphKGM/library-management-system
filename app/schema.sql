@@ -56,6 +56,3 @@ CREATE TABLE IF NOT EXISTS bookmark (
     note TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
 );
-
--- todo: enforce only one unreturned borrowing per copy.
--- todo: validate nonnegative positions and supported progress/status values.

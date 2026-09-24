@@ -2,21 +2,28 @@
 
 Group 2 | Principles of Programming Languages
 
-Backend starter for a member-based library of manga, comics, novels, magazines, and graphic novels. Registered members may borrow available copies without a borrowing fee. Reading progress and bookmarks are planned features.
+A library system for manga, comics, novels, magazines and graphic novels
 
-## What is included
+Members can register and log in. Librarians can manage titles and physical copies. The project uses Flask and SQLite
 
-- Flask application factory, health endpoint, and explicit `init-db` command.
-- SQLite database helpers and schema.
-- Member registration and authentication with hashed passwords.
-- Trusted librarian account creation and authentication.
-- Librarian-gated catalog and physical-copy service functions.
+## What works now
 
-Borrowing, reading progress, bookmarks, and feature routes remain planned. Service functions are Python APIs; no login sessions or HTTP permission checks are implemented yet.
+- Create the database with the `init-db` command
+- Register and authenticate members with hashed passwords
+- Create and authenticate librarian accounts
+- Add, update and search media titles
+- Add physical copies and check which copies are available
+- Check that the server is running at `/api/health`
 
-## Run locally
+The member and catalog features currently run through Python service functions. They do not have API routes yet. Borrowing, returns, reading progress and bookmarks are still being built
 
-Use Python 3.9 or newer. From this folder:
+## How to run
+
+You need Python 3.9 or newer
+
+### macOS or Linux
+
+Open a terminal in this project folder and run
 
 ```sh
 python3 -m venv .venv
@@ -26,50 +33,44 @@ python -m flask --app app init-db
 python -m flask --app app run --debug
 ```
 
-On Windows, activate with `.venv\Scripts\activate` instead.
+### Windows PowerShell
 
-Check `http://127.0.0.1:5000/api/health`. It returns `{"status": "ok"}`. The root URL has no page because frontend work is left to the group. Debug mode is for local development only.
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m flask --app app init-db
+python -m flask --app app run --debug
+```
 
-## Structure
+Open http://127.0.0.1:5000/api/health in your browser. You should see `{"status":"ok"}`
+
+There is no homepage yet so opening http://127.0.0.1:5000/ will show a 404. Press Ctrl+C in the terminal to stop the server. When you run it again later you only need to activate the virtual environment and run the last command
+
+## Project files
 
 ```text
 app/
-  __init__.py         Flask setup
-  routes.py           health route and future endpoint notes
-  models.py           library record classes
-  db.py               SQLite connection and initialization
-  schema.sql          SQLite table definitions
+  __init__.py       Flask app setup
+  db.py             SQLite connection and database setup
+  schema.sql        Database tables
+  routes.py         Health endpoint
+  models.py         Record classes
   services/
-    members.py        member and librarian services
-    media.py          catalog and copy services
-    borrowing.py      borrowing and return stubs
-    reading.py        progress and bookmark stubs
-    helpers.py        pure function stubs
+    members.py      Members and librarians
+    media.py        Titles and copies
+    borrowing.py    Borrowing and returns to build
+    reading.py      Progress and bookmarks to build
+    helpers.py      Helper functions to build
 tests/
-  README.md           future test scenarios
-requirements.txt
-.gitignore
+  README.md         Test ideas
+requirements.txt   Python packages
 ```
 
-## Suggested implementation order
+## Next steps
 
-1. Database initialization, membership, authentication, and catalog services are implemented.
-2. Implement borrowing and returns. Confirm membership and copy availability; prevent two active borrowings of the same copy atomically.
-3. Implement reading progress, bookmarks, and pure helper functions.
-4. Add Flask endpoints, validation, error responses, and tests. Connect your frontend when ready.
+1. Build borrowing and returns
+2. Build reading progress and bookmarks
+3. Add API routes, login sessions, validation and tests
 
-`Member` represents borrowers. Create a librarian account through the trusted `create_librarian` Python service during setup. Catalog mutations require a librarian ID. This service-level check does not replace authenticated HTTP sessions when routes are added. Dates are stored as ISO-formatted text in the proposed SQLite schema. Progress and bookmarks belong to a member and title, so they can remain after a copy is returned. No payment or financial transaction features are planned.
-
-## Start your repository
-
-Copy or extract this folder to your chosen project location, then run:
-
-```sh
-git init
-git add .
-git commit -m "Add library backend boilerplate"
-```
-
-Create an empty remote repository yourself, then follow its instructions to add the remote and push. No repository or remote has been created by this scaffold.
-
-Reference: [Flask application factories](https://flask.palletsprojects.com/en/stable/patterns/appfactories/).
+Borrowing has no fee. There are no payment features in this project

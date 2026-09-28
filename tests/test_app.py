@@ -44,9 +44,11 @@ class LibraryWebsiteTests(unittest.TestCase):
         home = self.client.get("/")
         self.assertEqual(home.status_code, 200)
         self.assertIn(b"A Library Story", home.data)
+        self.assertIn(b'action="/#catalog"', home.data)
         self.assertNotIn(b"Design preview", home.data)
         self.assertNotIn(b"Catalog management", home.data)
         self.assertEqual(self.client.get(f"/works/{self.media_id}").status_code, 200)
+        self.assertIn(f'next=/works/{self.media_id}'.encode(), self.client.get(f"/works/{self.media_id}").data)
         self.assertEqual(self.client.get("/member").status_code, 302)
         self.assertEqual(self.client.get("/librarian").status_code, 302)
         self.assertEqual(self.client.get("/api/media").status_code, 200)
@@ -68,19 +70,20 @@ class LibraryWebsiteTests(unittest.TestCase):
         self.assertIn(b"already have this title borrowed", self.client.post(
             "/api/borrowings", json={"copy_id": self.copy_id}, headers={"X-CSRF-Token": token}
         ).data)
-        self.assertEqual(self.client.post(f"/works/{self.media_id}/progress", data={
-            "csrf_token": token, "position": "40", "status": "reading",
-        }).status_code, 302)
+        saved = self.client.post(f"/works/{self.media_id}/progress", data={
+            "csrf_token": token, "position": "40",
+        })
+        self.assertEqual(saved.location, f"/works/{self.media_id}#reader-tools")
         self.client.post(f"/works/{self.media_id}/progress", data={
-            "csrf_token": token, "position": "101", "status": "reading",
+            "csrf_token": token, "position": "101",
         })
         with self.app.app_context():
             self.assertEqual(get_db().execute("SELECT current_position FROM reading_progress").fetchone()[0], 40)
         self.assertEqual(self.client.post(f"/works/{self.media_id}/bookmarks", data={
-            "csrf_token": token, "position": "25", "note": "Good chapter",
+            "csrf_token": token,
         }).status_code, 302)
         self.assertIn(b"40%", self.client.get("/member").data)
-        self.assertIn(b"Good chapter", self.client.get("/member").data)
+        self.assertIn(b"Position 40", self.client.get("/member").data)
         with self.app.app_context():
             borrowing_id = get_db().execute("SELECT borrowing_id FROM borrowing_record").fetchone()[0]
             bookmark_id = get_db().execute("SELECT bookmark_id FROM bookmark").fetchone()[0]
@@ -94,9 +97,10 @@ class LibraryWebsiteTests(unittest.TestCase):
         self.assertIn(b"A Library Story", self.client.get("/member").data)
 
     def test_librarian_forms_and_csrf(self):
-        self.assertEqual(self.client.post("/login", data={"username": "staff", "password": "staff-password", "role": "librarian"}).status_code, 400)
+        self.assertNotIn(b"Account type", self.client.get("/login").data)
+        self.assertEqual(self.client.post("/login", data={"username": "staff", "password": "staff-password"}).status_code, 400)
         response = self.client.post("/login", data={
-            "csrf_token": self.csrf(), "username": "staff", "password": "staff-password", "role": "librarian",
+            "csrf_token": self.csrf(), "username": "staff", "password": "staff-password",
         }, follow_redirects=True)
         self.assertIn(b"Catalog management", response.data)
         self.assertEqual(self.client.get("/member").status_code, 403)
@@ -110,11 +114,22 @@ class LibraryWebsiteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         with self.app.app_context():
             media_id = get_db().execute("SELECT media_id FROM media_item WHERE title = 'Second Story'").fetchone()[0]
+        self.assertIn(b'LIB-00002', self.client.get(f"/librarian/titles/{media_id}/copies/new").data)
         self.assertEqual(self.client.post(f"/librarian/titles/{media_id}/copies/new", data={
             "csrf_token": token, "accession": "COPY-002",
         }).status_code, 302)
         self.assertIn(b"Second Story", self.client.get("/").data)
         self.assertEqual(self.client.get(f"/librarian/titles/{media_id}/edit").status_code, 200)
+
+    def test_sign_in_returns_member_to_chosen_title(self):
+        self.register()
+        token = self.csrf()
+        self.client.post("/logout", data={"csrf_token": token})
+        response = self.client.post("/login", data={
+            "csrf_token": self.csrf(), "username": "reader", "password": "reader-password",
+            "next": f"/works/{self.media_id}",
+        })
+        self.assertEqual(response.location, f"/works/{self.media_id}")
 
     def test_api_member_workflow(self):
         token = self.client.get("/api/session").json["csrf_token"]
@@ -123,7 +138,7 @@ class LibraryWebsiteTests(unittest.TestCase):
         }, headers={"X-CSRF-Token": token})
         self.assertEqual(created.status_code, 201)
         login = self.client.post("/api/session", json={
-            "role": "member", "username": "api-reader", "password": "reader-password",
+            "username": "api-reader", "password": "reader-password",
         }, headers={"X-CSRF-Token": token})
         self.assertEqual(login.status_code, 200)
         token = login.json["csrf_token"]

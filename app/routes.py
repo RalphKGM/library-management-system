@@ -6,7 +6,8 @@ from werkzeug.exceptions import HTTPException
 from app.db import get_db
 from app.services.borrowing import borrow_copy, get_borrowing_history, return_copy
 from app.services.media import add_copy, add_media, update_media
-from app.services.members import authenticate_librarian, authenticate_member, register_member
+from app.services.open_library import import_book, search_books
+from app.services.members import authenticate_account, register_member
 from app.services.reading import (
     add_bookmark, get_bookmarks, get_progress, remove_bookmark, update_progress,
 )
@@ -63,17 +64,13 @@ def create_member():
 @api.post("/session")
 def create_session():
     data = _body()
-    role = data.get("role", "member")
-    if role not in ("member", "librarian"):
-        raise ValueError("invalid account type")
     try:
-        user = (authenticate_member if role == "member" else authenticate_librarian)(
-            data.get("username"), data.get("password"),
-        )
+        account = authenticate_account(data.get("username"), data.get("password"))
     except ValueError:
-        user = None
-    if not user:
+        account = None
+    if not account:
         return jsonify(error="Incorrect username or password."), 401
+    role, user = account
     session.clear()
     session["role"] = role
     session["user_id"] = user["member_id" if role == "member" else "librarian_id"]
@@ -86,6 +83,22 @@ def create_session():
 def delete_session():
     session.clear()
     return "", 204
+
+
+@api.get("/open-library/search")
+def search_open_library():
+    _role("librarian")
+    try:
+        return jsonify(search_books(request.args.get("q", "")))
+    except ConnectionError as exc:
+        return jsonify(error=str(exc)), 503
+
+
+@api.post("/open-library/import")
+def import_open_library():
+    _role("librarian")
+    data = _body()
+    return jsonify(import_book(data.get("import_token"), data.get("category"), g.user["id"])), 201
 
 
 @api.get("/media")

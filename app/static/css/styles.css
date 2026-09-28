@@ -60,8 +60,9 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 .button-secondary:hover:not(:disabled) { background: #ede5db; border-color: #817265; }
 .button-full { width: 100%; }
 
-.flash-stack { display: grid; gap: 8px; padding-top: 18px; }
+.flash-stack { position: fixed; z-index: 30; top: 82px; right: max(20px, calc((100vw - 1200px) / 2)); width: min(400px, calc(100vw - 40px)); display: grid; gap: 8px; pointer-events: none; }
 .flash { padding: 12px 15px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; font-size: 14px; }
+#catalog, #borrow-panel, #reader-tools, #borrowings, #bookmarks { scroll-margin-top: 90px; }
 .flash-success { border-color: #b7d2c4; color: #285f46; background: #eff7f2; }
 .flash-error { border-color: #e1bbbb; color: #8d2d2d; background: #fcf1f1; }
 .flash-info { border-color: #c8c1dc; background: #f3f1f8; }

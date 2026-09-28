@@ -6,12 +6,13 @@
   <div class="auth-card"><h2>Join the library</h2>
     <form action="{{ url_for('register') }}" method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      {% if return_to_work %}<input type="hidden" name="next" value="{{ return_to_work }}">{% endif %}
       <div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" value="{{ request.form.get('name', '') }}" required></div>
       <div class="field"><label for="username">Username</label><input id="username" name="username" autocomplete="username" value="{{ request.form.get('username', '') }}" required></div>
       <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><p class="field-help">Use at least 8 characters.</p></div>
       <button class="button button-full" type="submit">Create member account</button>
     </form>
-    <p class="auth-switch">Already a member? <a href="{{ url_for('login') }}">Sign in</a></p>
+    <p class="auth-switch">Already a member? <a href="{{ url_for('login', next=return_to_work) if return_to_work else url_for('login') }}">Sign in</a></p>
   </div>
 </section>
 {% endblock %}

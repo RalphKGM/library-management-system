@@ -1,3 +1,4 @@
+import re
 import sqlite3
 from datetime import datetime, timezone
 
@@ -5,7 +6,7 @@ from app.db import get_db
 from app.services.members import require_librarian
 
 
-FIELDS = ("title", "author", "category", "volume", "progress_unit", "total_units", "description", "cover")
+FIELDS = ("title", "author", "category", "volume", "progress_unit", "total_units", "description", "cover", "source_key")
 
 
 def _validate(details):
@@ -27,8 +28,10 @@ def _validate(details):
         raise ValueError("volume must be text")
     if "description" in details and (not isinstance(details["description"], str) or len(details["description"]) > 2000):
         raise ValueError("description must be at most 2000 characters")
-    if "cover" in details and details["cover"] not in _cover_options():
+    if "cover" in details and details["cover"] not in _cover_options() and not re.fullmatch(r"https://covers\.openlibrary\.org/b/id/[1-9][0-9]*-M\.jpg", str(details["cover"])):
         raise ValueError("invalid cover image")
+    if "source_key" in details and details["source_key"] is not None and not re.fullmatch(r"/works/OL[0-9]+W", str(details["source_key"])):
+        raise ValueError("invalid Open Library work")
     return details
 
 
@@ -45,11 +48,14 @@ def add_media(details, librarian_id):
         if field not in data:
             raise ValueError(f"{field} is required")
     db = get_db()
-    cursor = db.execute(
-        "INSERT INTO media_item (title, author, category, volume, progress_unit, total_units, description, cover, added_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (data["title"], data["author"], data["category"], data.get("volume"), data.get("progress_unit", "page"), data.get("total_units"), data.get("description", ""), data.get("cover", "catalog-placeholder.svg"), datetime.now(timezone.utc).isoformat()),
-    )
-    db.commit()
+    try:
+        cursor = db.execute(
+            "INSERT INTO media_item (title, author, category, volume, progress_unit, total_units, description, cover, added_at, source_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (data["title"], data["author"], data["category"], data.get("volume"), data.get("progress_unit", "page"), data.get("total_units"), data.get("description", ""), data.get("cover", "catalog-placeholder.svg"), datetime.now(timezone.utc).isoformat(), data.get("source_key")),
+        )
+        db.commit()
+    except sqlite3.IntegrityError as exc:
+        raise ValueError("this Open Library title is already in the catalog") from exc
     return dict(db.execute("SELECT * FROM media_item WHERE media_id = ?", (cursor.lastrowid,)).fetchone())
 
 
@@ -58,6 +64,8 @@ def update_media(media_id, changes, librarian_id):
     data = _validate(dict(changes))
     if not data:
         raise ValueError("no changes supplied")
+    if "source_key" in data:
+        raise ValueError("Open Library source cannot be changed")
     db = get_db()
     if not db.execute("SELECT 1 FROM media_item WHERE media_id = ?", (media_id,)).fetchone():
         return None

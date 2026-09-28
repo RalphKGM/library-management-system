@@ -6,16 +6,12 @@
     <span class="eyebrow">Explore the collection</span>
     <h1>Find your next story on the shelf.</h1>
     <p>Browse manga, comics, literature, novels, magazines, and graphic novels with copy availability visible at a glance.</p>
-    <form class="hero-search" action="{{ url_for('browse') }}" method="get" role="search">
-      <label class="sr-only" for="hero-q">Search the catalog</label>
-      <input id="hero-q" name="q" type="search" value="{{ query }}" placeholder="Search by title, author, or category">
-      <button class="button" type="submit">Search catalog</button>
-    </form>
+    <a class="button" href="#catalog">Browse the catalog</a>
     <div class="hero-stats" aria-label="Collection highlights"><span><strong>{{ works|length }}</strong> titles</span><span><strong>{{ categories|length }}</strong> categories</span><span><strong>{{ works|sum(attribute='available') }}</strong> copies available</span></div>
   </div>
   <div class="hero-art" aria-label="Featured covers">
     {% for work in featured[:3] %}
-      <a href="{{ url_for('work_detail', media_id=work.media_id) }}" class="hero-cover hero-cover-{{ loop.index }}"><img src="{{ url_for('static', filename='images/covers/' ~ work.cover) }}" alt="{{ work.title }} cover"></a>
+      <a href="{{ url_for('work_detail', media_id=work.media_id) }}" class="hero-cover hero-cover-{{ loop.index }}"><img src="{{ work.cover|cover_src }}" alt="{{ work.title }} cover"></a>
     {% else %}
       {% for cover in ['moonlit-archive.svg', 'city-after-rain.svg', 'paper-garden.svg'] %}<span class="hero-cover hero-cover-{{ loop.index }}"><img src="{{ url_for('static', filename='images/covers/' ~ cover) }}" alt=""></span>{% endfor %}
     {% endfor %}
@@ -24,7 +20,7 @@
 </section>
 <section class="category-strip" aria-label="Browse categories">
   <div class="shell category-scroll">
-    {% for category in categories %}<a href="{{ url_for('browse', category=category) }}">{{ category }}</a>{% endfor %}
+    {% for category in categories %}<a href="{{ url_for('browse', category=category, _anchor='catalog') }}">{{ category }}</a>{% endfor %}
   </div>
 </section>
 {% if featured %}<section class="shell section-block">
@@ -47,7 +43,7 @@
 </section>{% endif %}
 <section class="shell section-block" id="catalog">
   <div class="section-heading catalog-heading"><div><span class="eyebrow">All titles</span><h2>Browse the catalog</h2></div><span class="result-count">{{ filtered|length }} result{% if filtered|length != 1 %}s{% endif %}</span></div>
-  <form class="catalog-toolbar" method="get">
+  <form class="catalog-toolbar" method="get" action="{{ url_for('browse', _anchor='catalog') }}" role="search">
     <div class="field grow"><label for="q">Search</label><input id="q" name="q" type="search" value="{{ query }}" placeholder="Title, author, category"></div>
     <div class="field"><label for="category">Category</label><select id="category" name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category }}" {% if active_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></div>
     <div class="field"><label for="sort">Sort</label><select id="sort" name="sort"><option value="title" {% if sort == 'title' %}selected{% endif %}>Title A–Z</option><option value="availability" {% if sort == 'availability' %}selected{% endif %}>Availability</option><option value="recent" {% if sort == 'recent' %}selected{% endif %}>Recently added</option></select></div>
@@ -57,6 +53,6 @@
 </section>
 <section class="shell section-block browse-categories">
   <div class="section-heading"><div><span class="eyebrow">Browse another way</span><h2>By category</h2></div></div>
-  <div class="category-cards">{% for category in categories %}<a href="{{ url_for('browse', category=category) }}"><span>{{ '%02d'|format(loop.index) }}</span><strong>{{ category }}</strong><small>Explore shelf →</small></a>{% endfor %}</div>
+  <div class="category-cards">{% for category in categories %}<a href="{{ url_for('browse', category=category, _anchor='catalog') }}"><span>{{ '%02d'|format(loop.index) }}</span><strong>{{ category }}</strong><small>Explore shelf →</small></a>{% endfor %}</div>
 </section>
 {% endblock %}

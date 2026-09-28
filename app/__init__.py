@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import secrets
 
-from flask import Flask
+from flask import Flask, url_for
 
 
 def create_app(test_config=None):
@@ -24,6 +24,12 @@ def create_app(test_config=None):
 
     if test_config:
         app.config.update(test_config)
+
+    @app.template_filter("cover_src")
+    def cover_src(cover):
+        if isinstance(cover, str) and cover.startswith("https://covers.openlibrary.org/b/id/"):
+            return cover
+        return url_for("static", filename="images/covers/" + cover)
 
     from . import db
     db.init_app(app)

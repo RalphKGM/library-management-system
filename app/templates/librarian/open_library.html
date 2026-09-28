@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Find titles · The Reading Room{% endblock %}
+{% block content %}
+<section class="librarian-page shell narrow-admin">
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('librarian') }}">Catalog management</a><span>/</span><span aria-current="page">Find titles</span></nav>
+  <div class="admin-heading"><div><span class="eyebrow">Open Library</span><h1>Find a title</h1><p>Search book details then add physical copies separately.</p></div></div>
+  <form class="admin-form" method="get"><div class="field"><label for="q">Title or author</label><input id="q" name="q" type="search" value="{{ query }}" maxlength="120" required></div><div class="form-actions"><button class="button" type="submit">Search</button><a class="button button-secondary" href="{{ url_for('librarian_add_title') }}">Add manually</a></div></form>
+  {% if results %}<section class="admin-panel"><h2>Search results</h2><p>Check each result before adding it to our catalog.</p>
+    {% for book in results %}<div class="borrow-row"><img src="{{ book.cover|cover_src }}" alt=""><div><strong>{{ book.title }}</strong><span>{{ book.author }}{% if book.first_publish_year %} · {{ book.first_publish_year }}{% endif %}</span></div><form method="post" action="{{ url_for('librarian_import_open_library') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="import_token" value="{{ book.import_token }}"><label for="category-{{ loop.index }}">Category</label><select id="category-{{ loop.index }}" name="category">{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select><button class="button button-small" type="submit">Add title</button></form></div>{% endfor %}
+  </section>{% elif query %}<div class="admin-empty">No matching titles found. You can add one manually.</div>{% endif %}
+  <p class="field-help">Book information and covers from <a href="https://openlibrary.org/">Open Library</a>. A search result does not mean our library owns a copy.</p>
+</section>
+{% endblock %}

@@ -31,9 +31,11 @@ def init_db():
         ("description", "TEXT NOT NULL DEFAULT ''"),
         ("cover", "TEXT NOT NULL DEFAULT 'catalog-placeholder.svg'"),
         ("added_at", "TEXT NOT NULL DEFAULT ''"),
+        ("source_key", "TEXT"),
     ):
         if name not in columns:
             get_db().execute(f"ALTER TABLE media_item ADD COLUMN {name} {declaration}")
+    get_db().execute("CREATE UNIQUE INDEX IF NOT EXISTS unique_media_source_key ON media_item(source_key) WHERE source_key IS NOT NULL")
     get_db().commit()
 
 

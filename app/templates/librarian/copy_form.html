@@ -4,6 +4,6 @@
 <section class="librarian-page shell narrow-admin">
   <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('librarian') }}">Catalog management</a><span>/</span><span aria-current="page">Add copy</span></nav>
   <div class="admin-heading"><div><span class="eyebrow">Physical inventory</span><h1>Add a copy</h1><p>{{ work.title }}</p></div></div>
-  <form class="admin-form" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid"><div class="field span-2"><label for="accession">Accession number</label><input id="accession" name="accession" value="{{ request.form.get('accession', '') }}" placeholder="e.g. COPY-001" required></div></div><div class="form-actions"><a class="button button-secondary" href="{{ url_for('librarian') }}">Cancel</a><button class="button" type="submit">Add copy</button></div></form>
+  <form class="admin-form" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid"><div class="field span-2"><label for="accession">Accession number</label><input id="accession" name="accession" value="{{ request.form.get('accession', suggested_accession) }}" required><p class="field-help">A unique number is suggested. Change it if this copy already has a library label.</p></div></div><div class="form-actions"><a class="button button-secondary" href="{{ url_for('librarian') }}">Cancel</a><button class="button" type="submit">Add copy</button></div></form>
 </section>
 {% endblock %}

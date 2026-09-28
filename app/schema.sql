@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS media_item (
     total_units INTEGER,
     description TEXT NOT NULL DEFAULT '',
     cover TEXT NOT NULL DEFAULT 'catalog-placeholder.svg',
-    added_at TEXT NOT NULL DEFAULT ''
+    added_at TEXT NOT NULL DEFAULT '',
+    source_key TEXT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS media_copy (

@@ -1,3 +1,5 @@
+import re
+
 from flask import abort, flash, g, redirect, render_template, request, session, url_for
 
 from app.db import get_db
@@ -6,7 +8,8 @@ from app.security import require_role
 from app.services.borrowing import borrow_copy, get_borrowing_history, return_copy
 from app.services.helpers import calculate_progress
 from app.services.media import add_copy, add_media, get_available_copies, update_media
-from app.services.members import authenticate_librarian, authenticate_member, register_member
+from app.services.open_library import import_book, search_books
+from app.services.members import authenticate_account, register_member
 from app.services.reading import (
     add_bookmark, get_all_progress, get_bookmarks, get_progress,
     remove_bookmark, update_progress,
@@ -63,6 +66,19 @@ def _whole_number(value, label):
         return int(value)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{label} must be a whole number") from exc
+
+
+def _return_to_work():
+    target = request.form.get("next") or request.args.get("next", "")
+    return target if re.fullmatch(r"/works/\d+", target) else None
+
+
+def _suggest_accession():
+    db = get_db()
+    number = db.execute("SELECT COALESCE(MAX(copy_id), 0) + 1 FROM media_copy").fetchone()[0]
+    while db.execute("SELECT 1 FROM media_copy WHERE accession_number = ?", (f"LIB-{number:05d}",)).fetchone():
+        number += 1
+    return f"LIB-{number:05d}"
 
 
 def register_ui(app):
@@ -128,31 +144,36 @@ def register_ui(app):
                 flash("Copy borrowed successfully.", "success")
             except ValueError as exc:
                 flash(str(exc), "error")
-        return redirect(url_for("work_detail", media_id=media_id))
+        return redirect(url_for("work_detail", media_id=media_id, _anchor="borrow-panel"))
 
     @app.post("/works/<int:media_id>/progress")
     @require_role("member")
     def save_progress(media_id):
         try:
-            update_progress(g.user["id"], media_id,
-                            _whole_number(request.form.get("position"), "position"),
-                            request.form.get("status", ""))
+            position = _whole_number(request.form.get("position"), "position")
+            work = _work(media_id)
+            if work is None:
+                abort(404)
+            status = ("completed" if work["total_units"] and position == work["total_units"]
+                      else "reading" if position > 0 else "not_started")
+            update_progress(g.user["id"], media_id, position, status)
             flash("Reading progress saved.", "success")
         except ValueError as exc:
             flash(str(exc), "error")
-        return redirect(url_for("work_detail", media_id=media_id))
+        return redirect(url_for("work_detail", media_id=media_id, _anchor="reader-tools"))
 
     @app.post("/works/<int:media_id>/bookmarks")
     @require_role("member")
     def save_bookmark(media_id):
         try:
-            add_bookmark(g.user["id"], media_id,
-                         _whole_number(request.form.get("position"), "position"),
-                         request.form.get("note", ""))
+            current = get_progress(g.user["id"], media_id)
+            if current is None or current["current_position"] <= 0:
+                raise ValueError("Save your reading position before bookmarking it.")
+            add_bookmark(g.user["id"], media_id, current["current_position"])
             flash("Bookmark saved.", "success")
         except ValueError as exc:
             flash(str(exc), "error")
-        return redirect(url_for("work_detail", media_id=media_id))
+        return redirect(url_for("work_detail", media_id=media_id, _anchor="reader-tools"))
 
     @app.post("/bookmarks/<int:bookmark_id>/delete")
     @require_role("member")
@@ -161,7 +182,7 @@ def register_ui(app):
             flash("Bookmark removed.", "success")
         else:
             abort(404)
-        return redirect(url_for("member"))
+        return redirect(url_for("member", _anchor="bookmarks"))
 
     @app.get("/member")
     @require_role("member")
@@ -187,7 +208,7 @@ def register_ui(app):
             abort(404)
         return_copy(borrowing_id)
         flash("Copy returned. Thank you.", "success")
-        return redirect(url_for("member"))
+        return redirect(url_for("member", _anchor="borrowings"))
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -196,21 +217,20 @@ def register_ui(app):
         if request.method == "POST":
             username = request.form.get("username", "").strip()
             password = request.form.get("password", "")
-            role = request.form.get("role", "member")
-            if role not in ("member", "librarian"):
-                abort(400)
             try:
-                user = (authenticate_member if role == "member" else authenticate_librarian)(username, password)
+                account = authenticate_account(username, password)
             except ValueError:
-                user = None
-            if user:
+                account = None
+            if account:
+                role, user = account
                 session.clear()
                 session["role"] = role
                 session["user_id"] = user["member_id" if role == "member" else "librarian_id"]
                 flash("Signed in successfully.", "success")
-                return redirect(url_for("member" if role == "member" else "librarian"))
+                return redirect((_return_to_work() if role == "member" else None)
+                                or url_for("member" if role == "member" else "librarian"))
             flash("Incorrect username or password.", "error")
-        return render_template("auth/login.html")
+        return render_template("auth/login.html", return_to_work=_return_to_work())
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
@@ -230,8 +250,8 @@ def register_ui(app):
                 session["role"] = "member"
                 session["user_id"] = user["member_id"]
                 flash("Your membership is ready.", "success")
-                return redirect(url_for("member"))
-        return render_template("auth/register.html")
+                return redirect(_return_to_work() or url_for("member"))
+        return render_template("auth/register.html", return_to_work=_return_to_work())
 
     @app.post("/logout")
     def logout():
@@ -243,6 +263,29 @@ def register_ui(app):
     @require_role("librarian")
     def librarian():
         return render_template("librarian/index.html", works=_catalog())
+
+    @app.get("/librarian/open-library")
+    @require_role("librarian")
+    def librarian_open_library():
+        query = request.args.get("q", "").strip()
+        results = []
+        if query:
+            try:
+                results = search_books(query)
+            except (ValueError, ConnectionError) as exc:
+                flash(str(exc), "error")
+        return render_template("librarian/open_library.html", query=query, results=results)
+
+    @app.post("/librarian/open-library/import")
+    @require_role("librarian")
+    def librarian_import_open_library():
+        try:
+            work = import_book(request.form.get("import_token"), request.form.get("category"), g.user["id"])
+        except ValueError as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("librarian_open_library"))
+        flash("Title imported. Add a physical copy to make it borrowable.", "success")
+        return redirect(url_for("librarian_add_copy", media_id=work["media_id"]))
 
     @app.route("/librarian/titles/new", methods=["GET", "POST"])
     @require_role("librarian")
@@ -287,4 +330,4 @@ def register_ui(app):
             else:
                 flash("Physical copy added.", "success")
                 return redirect(url_for("librarian"))
-        return render_template("librarian/copy_form.html", work=work)
+        return render_template("librarian/copy_form.html", work=work, suggested_accession=_suggest_accession())

@@ -1,6 +1,6 @@
 <article class="cover-card">
   <a class="cover-link" href="{{ url_for('work_detail', media_id=work.media_id) }}" aria-label="View {{ work.title }} by {{ work.author }}">
-    <img class="cover-image" src="{{ url_for('static', filename='images/covers/' ~ work.cover) }}" alt="Cover artwork for {{ work.title }}">
+    <img class="cover-image" src="{{ work.cover|cover_src }}" alt="Cover artwork for {{ work.title }}">
   </a>
   <div class="cover-card-body">
     <div class="cover-meta"><span>{{ work.category }}</span>{% if work.volume %}<span>{{ work.volume }}</span>{% endif %}</div>

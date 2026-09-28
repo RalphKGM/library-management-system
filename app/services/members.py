@@ -21,6 +21,8 @@ def register_member(full_name, username, password):
     username = _required(username, "username")
     password = _required(password, "password")
     db = get_db()
+    if db.execute("SELECT 1 FROM librarian WHERE username = ?", (username,)).fetchone():
+        raise ValueError("username already exists")
     try:
         cursor = db.execute(
             "INSERT INTO member (full_name, username, password_hash, registered_at) VALUES (?, ?, ?, ?)",
@@ -49,6 +51,8 @@ def create_librarian(username, password):
     username = _required(username, "username")
     password = _required(password, "password")
     db = get_db()
+    if db.execute("SELECT 1 FROM member WHERE username = ?", (username,)).fetchone():
+        raise ValueError("username already exists")
     try:
         cursor = db.execute(
             "INSERT INTO librarian (username, password_hash) VALUES (?, ?)",
@@ -67,6 +71,16 @@ def authenticate_librarian(username, password):
     row = get_db().execute("SELECT * FROM librarian WHERE username = ?", (username,)).fetchone()
     if row and check_password_hash(row["password_hash"], password):
         return {"librarian_id": row["librarian_id"], "username": row["username"]}
+    return None
+
+
+def authenticate_account(username, password):
+    member = authenticate_member(username, password)
+    if member:
+        return "member", member
+    librarian = authenticate_librarian(username, password)
+    if librarian:
+        return "librarian", librarian
     return None
 
 

@@ -30,7 +30,7 @@ class OpenLibraryTests(unittest.TestCase):
     def test_search_and_import_requires_librarian_and_creates_no_copy(self):
         self.assertEqual(self.client.get("/api/open-library/search?q=story").status_code, 401)
         token = self.login()
-        payload = {"docs": [{"key": "/works/OL123W", "title": "The Story", "author_name": ["A. Writer"], "cover_i": 456, "number_of_pages_median": 90}, {"key": "bad", "title": "Skip"}]}
+        payload = {"docs": [{"key": "/works/OL123W", "title": "The Story", "author_name": ["A. Writer"], "cover_i": 456, "number_of_pages_median": 90, "subject": ["Fiction", "Fantasy"]}, {"key": "bad", "title": "Skip"}]}
         response = io.BytesIO(json.dumps(payload).encode())
         with patch("app.services.open_library.urlopen", return_value=response):
             search = self.client.get("/api/open-library/search?q=story")
@@ -39,14 +39,16 @@ class OpenLibraryTests(unittest.TestCase):
         with patch("app.services.open_library.urlopen", return_value=io.BytesIO(json.dumps(payload).encode())):
             self.assertIn(b"The Story", self.client.get("/librarian/open-library?q=story").data)
         self.assertEqual(search.json[0]["cover"], "https://covers.openlibrary.org/b/id/456-M.jpg")
-        data = {"import_token": search.json[0]["import_token"], "category": "Literature"}
+        self.assertEqual(search.json[0]["category"], "Novels")
+        data = {"import_token": search.json[0]["import_token"]}
         imported = self.client.post("/api/open-library/import", json=data, headers={"X-CSRF-Token": token})
         self.assertEqual(imported.status_code, 201)
         self.assertEqual(imported.json["source_key"], "/works/OL123W")
+        self.assertEqual(imported.json["category"], "Novels")
         with self.app.app_context():
             self.assertEqual(get_db().execute("SELECT COUNT(*) FROM media_copy").fetchone()[0], 0)
-        self.assertIn(b"456-M.jpg", self.client.get("/").data)
-        self.assertIn(b"openlibrary.org/works/OL123W", self.client.get(f"/works/{imported.json['media_id']}").data)
+        self.assertIn(b"456-M.jpg", self.client.get("/librarian").data)
+        self.assertIn(b"openlibrary.org/works/OL123W", self.app.test_client().get(f"/works/{imported.json['media_id']}").data)
         self.assertEqual(self.client.post("/api/open-library/import", json=data, headers={"X-CSRF-Token": token}).status_code, 400)
 
     def test_invalid_import_and_upstream_failure(self):

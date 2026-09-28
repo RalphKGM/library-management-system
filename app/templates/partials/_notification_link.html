@@ -1,0 +1,4 @@
+<a class="notification-link" href="{{ url_for('notifications') }}" aria-label="Notifications{% if notification_count %}, {{ notification_count }} unread{% endif %}" title="Notifications">
+  <svg class="notification-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
+  {% if notification_count %}<span class="notification-badge">{{ notification_count if notification_count < 100 else '99+' }}</span>{% endif %}
+</a>

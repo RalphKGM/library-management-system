@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime, timezone
 
 from app.db import get_db
+from app.services.notifications import add_notification, notify_librarians
 
 
 def borrow_copy(member_id, copy_id):
@@ -27,6 +28,14 @@ def borrow_copy(member_id, copy_id):
         )
         if cursor.rowcount != 1:
             raise ValueError("copy is already borrowed")
+        detail = db.execute(
+            "SELECT m.title, member.full_name FROM media_copy c "
+            "JOIN media_item m ON m.media_id = c.media_id "
+            "JOIN member ON member.member_id = ? WHERE c.copy_id = ?",
+            (member_id, copy_id),
+        ).fetchone()
+        add_notification(db, "member", member_id, f"You borrowed {detail['title']}.", "/member#borrowings")
+        notify_librarians(db, f"{detail['full_name']} borrowed {detail['title']}.")
         db.commit()
     except sqlite3.IntegrityError as exc:
         db.rollback()
@@ -36,12 +45,22 @@ def borrow_copy(member_id, copy_id):
 
 def return_copy(borrowing_id):
     db = get_db()
+    detail = db.execute(
+        "SELECT b.member_id, m.title, member.full_name FROM borrowing_record b "
+        "JOIN media_copy c ON c.copy_id = b.copy_id "
+        "JOIN media_item m ON m.media_id = c.media_id "
+        "JOIN member ON member.member_id = b.member_id "
+        "WHERE b.borrowing_id = ? AND b.returned_at IS NULL",
+        (borrowing_id,),
+    ).fetchone()
     cursor = db.execute(
         "UPDATE borrowing_record SET returned_at = ? WHERE borrowing_id = ? AND returned_at IS NULL",
         (datetime.now(timezone.utc).isoformat(), borrowing_id),
     )
     if cursor.rowcount != 1:
         raise ValueError("active borrowing not found")
+    add_notification(db, "member", detail["member_id"], f"You returned {detail['title']}.", "/member#borrowings")
+    notify_librarians(db, f"{detail['full_name']} returned {detail['title']}.")
     db.commit()
     return dict(db.execute("SELECT * FROM borrowing_record WHERE borrowing_id = ?", (borrowing_id,)).fetchone())
 

@@ -1,5 +1,6 @@
 import re
 import sqlite3
+from uuid import uuid4
 from datetime import datetime, timezone
 
 from app.db import get_db
@@ -109,6 +110,30 @@ def add_copy(media_id, accession_number, librarian_id):
     except sqlite3.IntegrityError as exc:
         raise ValueError("accession number already exists") from exc
     return dict(db.execute("SELECT * FROM media_copy WHERE copy_id = ?", (cursor.lastrowid,)).fetchone())
+
+
+def add_copies(media_id, count, librarian_id):
+    require_librarian(librarian_id)
+    if type(count) is not int or not 1 <= count <= 500:
+        raise ValueError("quantity must be between 1 and 500")
+    db = get_db()
+    if not db.execute("SELECT 1 FROM media_item WHERE media_id = ?", (media_id,)).fetchone():
+        raise ValueError("media item does not exist")
+    try:
+        for _ in range(count):
+            cursor = db.execute(
+                "INSERT INTO media_copy (media_id, accession_number) VALUES (?, ?)",
+                (media_id, f"AUTO-{uuid4().hex}"),
+            )
+            db.execute(
+                "UPDATE media_copy SET accession_number = ? WHERE copy_id = ?",
+                (f"LIB-{cursor.lastrowid:06d}", cursor.lastrowid),
+            )
+        db.commit()
+    except sqlite3.IntegrityError as exc:
+        db.rollback()
+        raise ValueError("could not generate a unique copy ID") from exc
+    return count
 
 
 def get_available_copies(media_id):

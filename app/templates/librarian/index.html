@@ -1,11 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Catalog management · The Reading Room{% endblock %}
+{% block title %}Dashboard · The Reading Room{% endblock %}
 {% block content %}
-<section class="librarian-page shell">
-  <div class="admin-heading"><div><span class="eyebrow">Librarian workspace</span><h1>Catalog management</h1><p>Manage titles and physical copies in the collection.</p></div><div class="form-actions"><a class="button button-secondary" href="{{ url_for('librarian_open_library') }}">Find on Open Library</a><a class="button" href="{{ url_for('librarian_add_title') }}">Add title</a></div></div>
-  <div class="admin-stats"><div><span>Titles</span><strong>{{ works|length }}</strong></div><div><span>Total copies</span><strong>{{ works|sum(attribute='copies') }}</strong></div><div><span>Available now</span><strong>{{ works|sum(attribute='available') }}</strong></div></div>
-  <section class="admin-panel"><div class="admin-toolbar"><div><h2>Catalog records</h2><p>All titles in the library.</p></div><div class="field admin-search"><label class="sr-only" for="record-search">Filter records</label><input id="record-search" type="search" placeholder="Filter this table" data-table-filter></div></div>
-    {% if works %}<div class="admin-table-wrap"><table class="admin-table" data-filter-table><thead><tr><th>Title</th><th>Category</th><th>Copies</th><th>Available</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>{% for work in works %}<tr><td><div class="record-title"><img src="{{ work.cover|cover_src }}" alt=""><span><strong>{{ work.title }}</strong><small>{{ work.author }}</small></span></div></td><td>{{ work.category }}</td><td>{{ work.copies }}</td><td><span class="status-dot {% if work.available %}is-available{% endif %}"></span>{{ work.available }}</td><td><div class="table-actions"><a href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}">Edit</a><a href="{{ url_for('librarian_add_copy', media_id=work.media_id) }}">Add copy</a><a href="{{ url_for('work_detail', media_id=work.media_id) }}">View</a></div></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="admin-empty">No titles yet. Add the first one to start your collection.</div>{% endif %}
-  </section>
-</section>
+<div class="staff-shell">
+  {% include "librarian/_rail.html" %}
+  <div class="staff-main">
+    <header class="staff-topbar">
+      <div class="staff-top-title"><span class="staff-menu-icon" aria-hidden="true">☰</span><strong>Dashboard</strong></div>
+      <div></div>
+      <div class="staff-account">{% include "partials/_notification_link.html" %}<span class="staff-account-name">{{ current_user.username }}</span><span class="staff-avatar" aria-hidden="true">{{ current_user.username[:2]|upper }}</span></div>
+    </header>
+    <div class="staff-content">
+      <div class="staff-welcome"><div><span class="staff-kicker">LIBRARY OVERVIEW</span><h1>Hello, <em>{{ current_user.username }}!</em></h1><p>Here is what is happening in your library</p></div><a class="staff-primary" href="{{ url_for('librarian_open_library') }}"><span aria-hidden="true">＋</span> Add new book</a></div>
+      <div class="staff-stats" aria-label="Library totals">
+        <a class="staff-stat" href="{{ url_for('librarian_books') }}"><div><strong>{{ works|length }}</strong><span>Total titles</span></div><span class="stat-icon" aria-hidden="true">▤</span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_copies') }}"><div><strong>{{ works|sum(attribute='copies') }}</strong><span>Physical copies</span></div><span class="stat-icon" aria-hidden="true">▣</span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_loans') }}"><div><strong>{{ totals.on_loan }}</strong><span>Books on loan</span></div><span class="stat-icon" aria-hidden="true">⇄</span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_members') }}"><div><strong>{{ totals.members }}</strong><span>Members</span></div><span class="stat-icon" aria-hidden="true">♙</span></a>
+      </div>
+      <div class="staff-panels">
+        <section class="staff-card" id="members"><div class="staff-card-head"><div><h2>Members list</h2><p>Most recently registered members</p></div><a class="staff-small-action" href="{{ url_for('librarian_members') }}">View all</a></div><div class="staff-table-scroll"><table class="staff-table"><thead><tr><th>Member</th><th>Username</th><th>On loan</th><th>Joined</th></tr></thead><tbody>{% for member in members %}<tr><td><span class="member-name"><span class="member-avatar" aria-hidden="true">{{ member.full_name[:1]|upper }}</span>{{ member.full_name }}</span></td><td>{{ member.username }}</td><td>{{ member.borrowed }}</td><td>{{ member.registered_at[:10] }}</td></tr>{% else %}<tr><td colspan="4" class="staff-empty">No members yet</td></tr>{% endfor %}</tbody></table></div></section>
+        <section class="staff-card" id="catalog"><div class="staff-card-head"><div><h2>Books list</h2><p>Titles and available copies</p></div><label class="staff-search staff-inline-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search books list</span><input type="search" placeholder="Search books or authors" data-table-filter></label></div><div class="staff-table-scroll"><table class="staff-table" data-filter-table><thead><tr><th>Title</th><th>Author</th><th>Available</th><th>Action</th></tr></thead><tbody>{% for work in works %}<tr><td><a class="staff-title-link" href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}">{{ work.title }}</a></td><td>{{ work.author }}</td><td>{{ work.available }} / {{ work.copies }}</td><td><a class="staff-row-action" href="{{ url_for('librarian_add_copy', media_id=work.media_id) }}">＋ Copy</a></td></tr>{% else %}<tr><td colspan="4" class="staff-empty">No titles yet</td></tr>{% endfor %}</tbody></table></div></section>
+      </div>
+      <section class="staff-choices" aria-labelledby="staff-choices-title"><div class="staff-choices-head"><div><span class="staff-kicker">THE COLLECTION</span><h2 id="staff-choices-title">Books in the library</h2></div><a href="{{ url_for('librarian_books') }}">View all <span aria-hidden="true">↗</span></a></div><div class="staff-books">{% for work in works[:6] %}<a class="staff-book" href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}"><img src="{{ work.cover|cover_src }}" alt=""><strong>{{ work.title }}</strong><span>{{ work.author }}</span><small>{{ work.category }} · {{ work.available }} available</small></a>{% else %}<p class="staff-empty">Add books to see them here</p>{% endfor %}</div></section>
+    </div>
+  </div>
+</div>
 {% endblock %}

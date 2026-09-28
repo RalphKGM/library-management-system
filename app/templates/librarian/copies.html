@@ -1,0 +1,7 @@
+{% extends "librarian/_workspace.html" %}
+{% block title %}Physical copies · The Reading Room{% endblock %}
+{% block workspace_title %}Physical copies{% endblock %}
+{% block workspace_content %}
+<div class="staff-page-heading"><div><span class="staff-kicker">INVENTORY</span><h1>Physical copies</h1><p>Every copy gets its own ID automatically</p></div></div>
+<section class="staff-card staff-page-card"><div class="staff-card-head"><div><h2>Copy tracker</h2><p>{{ copies|length }} copies</p></div><label class="staff-search staff-inline-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search copies</span><input type="search" placeholder="Search books or copy IDs" data-table-filter></label></div><div class="staff-table-scroll"><table class="staff-table" data-filter-table><thead><tr><th>Copy ID</th><th>Book</th><th>Author</th><th>Status</th><th>Action</th></tr></thead><tbody>{% for copy in copies %}<tr><td>{{ copy.accession_number }}</td><td>{{ copy.title }}</td><td>{{ copy.author }}</td><td><span class="staff-status {% if copy.active_loan %}is-loaned{% endif %}">{{ 'On loan' if copy.active_loan else 'Available' }}</span></td><td><a class="staff-row-action" href="{{ url_for('librarian_add_copy', media_id=copy.media_id) }}">＋ Copies</a></td></tr>{% else %}<tr><td colspan="5" class="staff-empty">No physical copies yet</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

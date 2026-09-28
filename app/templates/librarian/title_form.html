@@ -12,6 +12,6 @@
     <div class="field"><label for="progress_unit">Reading unit</label><select id="progress_unit" name="progress_unit"><option value="page" {% if request.form.get('progress_unit', work.progress_unit if work else 'page') == 'page' %}selected{% endif %}>Page</option><option value="chapter" {% if request.form.get('progress_unit', work.progress_unit if work else 'page') == 'chapter' %}selected{% endif %}>Chapter</option></select></div>
     <div class="field"><label for="total_units">Total pages or chapters</label><input id="total_units" name="total_units" type="number" min="1" value="{{ request.form.get('total_units', work.total_units if work and work.total_units else '') }}"></div>
     <div class="field span-2"><label for="description">Description</label><textarea id="description" name="description" rows="5" maxlength="2000">{{ request.form.get('description', work.description if work else '') }}</textarea></div>
-  </div><div class="form-actions"><a class="button button-secondary" href="{{ url_for('librarian') }}">Cancel</a><button class="button" type="submit">Save title</button></div></form>
+  </div><div class="form-actions"><a class="button button-secondary" href="{{ url_for('librarian') }}">Cancel</a><button class="button" type="submit"><span aria-hidden="true">✓</span> Save title</button></div></form>
 </section>
 {% endblock %}

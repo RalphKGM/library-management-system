@@ -1,0 +1,7 @@
+{% extends "librarian/_workspace.html" %}
+{% block title %}Members · The Reading Room{% endblock %}
+{% block workspace_title %}Members{% endblock %}
+{% block workspace_content %}
+<div class="staff-page-heading"><div><span class="staff-kicker">PEOPLE</span><h1>Members</h1><p>Registered library members and current loans</p></div></div>
+<section class="staff-card staff-page-card"><div class="staff-card-head"><div><h2>Members list</h2><p>{{ members|length }} registered</p></div><label class="staff-search staff-inline-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search members</span><input type="search" placeholder="Search members" data-table-filter></label></div><div class="staff-table-scroll"><table class="staff-table" data-filter-table><thead><tr><th>Member</th><th>Username</th><th>On loan</th><th>Joined</th></tr></thead><tbody>{% for member in members %}<tr><td><span class="member-name"><span class="member-avatar" aria-hidden="true">{{ member.full_name[:1]|upper }}</span>{{ member.full_name }}</span></td><td>{{ member.username }}</td><td>{{ member.on_loan }}</td><td>{{ member.registered_at[:10] }}</td></tr>{% else %}<tr><td colspan="4" class="staff-empty">No members yet</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

@@ -98,7 +98,7 @@ def search_open_library():
 def import_open_library():
     _role("librarian")
     data = _body()
-    return jsonify(import_book(data.get("import_token"), data.get("category"), g.user["id"])), 201
+    return jsonify(import_book(data.get("import_token"), g.user["id"])), 201
 
 
 @api.get("/media")

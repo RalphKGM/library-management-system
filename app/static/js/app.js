@@ -18,3 +18,30 @@ if (filterInput && filterTable) {
     })
   })
 }
+
+const themeChoices = document.querySelectorAll('[data-theme-choice]')
+const allowedThemes = ['rose', 'charcoal', 'coastal', 'orchid', 'midnight']
+function setTheme(theme) {
+  const chosen = allowedThemes.includes(theme) ? theme : 'rose'
+  document.documentElement.dataset.theme = chosen
+  themeChoices.forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.themeChoice === chosen))
+  })
+  try { localStorage.setItem('library-theme', chosen) } catch (_) {}
+}
+let savedTheme = 'rose'
+try { savedTheme = localStorage.getItem('library-theme') || 'rose' } catch (_) {}
+setTheme(savedTheme)
+themeChoices.forEach(button => button.addEventListener('click', () => setTheme(button.dataset.themeChoice)))
+
+function dismissFlash(flash) {
+  flash.classList.add('is-leaving')
+  window.setTimeout(() => flash.remove(), 250)
+}
+document.querySelectorAll('.flash').forEach(flash => {
+  const timer = window.setTimeout(() => dismissFlash(flash), 7000)
+  flash.querySelector('.flash-close')?.addEventListener('click', () => {
+    window.clearTimeout(timer)
+    dismissFlash(flash)
+  })
+})

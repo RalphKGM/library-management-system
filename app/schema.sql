@@ -63,3 +63,16 @@ CREATE TABLE IF NOT EXISTS bookmark (
     note TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS notification (
+    notification_id INTEGER PRIMARY KEY,
+    recipient_role TEXT NOT NULL CHECK (recipient_role IN ('member', 'librarian')),
+    recipient_id INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    target TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    read_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS notification_inbox
+ON notification (recipient_role, recipient_id, read_at, notification_id DESC);

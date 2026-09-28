@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Settings · The Reading Room{% endblock %}
+{% block content %}
+<section class="shell settings-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('librarian') if current_user.role == 'librarian' else url_for('member') }}">{{ 'Catalog management' if current_user.role == 'librarian' else 'My Library' }}</a><span>/</span><span aria-current="page">Settings</span></nav>
+  <div class="page-heading"><span class="eyebrow">Preferences</span><h1>Make it yours.</h1><p>Choose the colors that feel best to read in. Your choice stays in this browser.</p></div>
+  <section class="settings-panel"><h2>Color theme</h2><p>Pick a palette. The preview applies right away.</p>
+    <div class="theme-options" role="group" aria-label="Color theme">
+      <button class="theme-option" type="button" data-theme-choice="rose" aria-pressed="false"><span class="theme-preview theme-rose" aria-hidden="true"></span><strong>Rose</strong><small>Light dashboard</small></button>
+      <button class="theme-option" type="button" data-theme-choice="charcoal" aria-pressed="false"><span class="theme-preview theme-charcoal" aria-hidden="true"></span><strong>Charcoal</strong><small>Dark dashboard</small></button>
+      <button class="theme-option" type="button" data-theme-choice="coastal" aria-pressed="false"><span class="theme-preview theme-coastal" aria-hidden="true"></span><strong>Coastal</strong><small>Blue and sea glass</small></button>
+      <button class="theme-option" type="button" data-theme-choice="orchid" aria-pressed="false"><span class="theme-preview theme-orchid" aria-hidden="true"></span><strong>Orchid</strong><small>Plum and lavender</small></button>
+      <button class="theme-option" type="button" data-theme-choice="midnight" aria-pressed="false"><span class="theme-preview theme-midnight" aria-hidden="true"></span><strong>Midnight</strong><small>Dark blue and gold</small></button>
+    </div>
+  </section>
+</section>
+{% endblock %}

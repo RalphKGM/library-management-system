@@ -14,6 +14,28 @@ WORK_KEY = re.compile(r"^/works/OL[0-9]+W$")
 SEARCH_URL = "https://openlibrary.org/search.json"
 
 
+def _category(doc):
+    subjects = doc.get("subject") or []
+    if not isinstance(subjects, list):
+        subjects = []
+    terms = " ".join(str(value).casefold() for value in subjects[:40])
+    terms += " " + str(doc.get("title", "")).casefold()
+    if "manga" in terms or "manhwa" in terms:
+        return "Manga"
+    if "graphic novel" in terms:
+        return "Graphic Novels"
+    if "comic" in terms or "superhero" in terms:
+        return "Comics"
+    if "magazine" in terms or "periodical" in terms or "journal" in terms:
+        return "Magazines"
+    if any(word in terms for word in ("poetry", "essay", "literary criticism", "drama", "plays")):
+        return "Literature"
+    if any(word in terms for word in ("novel", "fiction", "fantasy", "mystery", "science fiction", "romance")):
+        return "Novels"
+    return "Literature"
+
+
+
 def _signer():
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="open-library-import")
 
@@ -24,7 +46,7 @@ def search_books(query):
     query = query.strip()
     if len(query) > 120:
         raise ValueError("search must be at most 120 characters")
-    params = urlencode({"q": query, "fields": "key,title,author_name,cover_i,first_publish_year,number_of_pages_median", "limit": 10})
+    params = urlencode({"q": query, "fields": "key,title,author_name,cover_i,first_publish_year,number_of_pages_median,subject", "limit": 10})
     request = Request(f"{SEARCH_URL}?{params}", headers={"User-Agent": "TheReadingRoom/1.0 (educational library project)"})
     try:
         with urlopen(request, timeout=6) as response:
@@ -52,12 +74,13 @@ def search_books(query):
             "author": author[:300] or "Unknown author",
             "cover": cover,
             "total_units": pages if type(pages) is int and 0 < pages <= 100000 else None,
+            "category": _category(doc),
         }
         results.append({**data, "first_publish_year": doc.get("first_publish_year"), "import_token": _signer().dumps(data)})
     return results
 
 
-def import_book(token, category, librarian_id):
+def import_book(token, librarian_id):
     try:
         data = _signer().loads(token, max_age=1800)
     except (BadSignature, SignatureExpired, TypeError) as exc:
@@ -66,9 +89,9 @@ def import_book(token, category, librarian_id):
         raise ValueError("invalid Open Library result")
     from app.sample_catalog import CATEGORIES
 
-    if category not in CATEGORIES:
-        raise ValueError("choose a valid category")
+    if data.get("category") not in CATEGORIES:
+        raise ValueError("invalid category")
     details = {name: data.get(name) for name in ("title", "author", "cover", "total_units")}
-    details["category"] = category
+    details["category"] = data["category"]
     details["source_key"] = data["source_key"]
     return add_media(details, librarian_id)

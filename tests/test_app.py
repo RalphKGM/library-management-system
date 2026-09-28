@@ -59,6 +59,8 @@ class LibraryWebsiteTests(unittest.TestCase):
         response = self.register()
         self.assertIn(b"Your stories, in one place", response.data)
         self.assertEqual(self.client.get("/librarian").status_code, 403)
+        for path in ("/librarian/books", "/librarian/members", "/librarian/loans", "/librarian/copies"):
+            self.assertEqual(self.client.get(path).status_code, 403)
         self.assertIn(b"My Library", self.client.get("/").data)
         self.assertNotIn(b"Catalog management", self.client.get("/").data)
         token = self.csrf()
@@ -102,9 +104,18 @@ class LibraryWebsiteTests(unittest.TestCase):
         response = self.client.post("/login", data={
             "csrf_token": self.csrf(), "username": "staff", "password": "staff-password",
         }, follow_redirects=True)
-        self.assertIn(b"Catalog management", response.data)
+        self.assertIn(b"Hello, ", response.data)
+        self.assertIn(b"Physical copies", response.data)
+        self.assertIn(b"Members list", response.data)
+        self.assertIn(b"A Library Story", response.data)
+        self.assertIn(b'href="/librarian/loans"', response.data)
+        self.assertIn(b'href="/librarian/copies"', response.data)
+        for path in ("/librarian/books", "/librarian/members", "/librarian/loans", "/librarian/copies"):
+            self.assertEqual(self.client.get(path).status_code, 200)
         self.assertEqual(self.client.get("/member").status_code, 403)
-        self.assertNotIn(b"My Library", self.client.get("/").data)
+        self.assertEqual(self.client.get("/").location, "/librarian")
+        self.assertNotIn(b"Browse</a>", self.client.get("/librarian").data)
+        self.assertIn(b"Settings", self.client.get("/settings").data)
         token = self.csrf()
         response = self.client.post("/librarian/titles/new", data={
             "csrf_token": token, "title": "Second Story", "author": "B. Writer",
@@ -114,11 +125,17 @@ class LibraryWebsiteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         with self.app.app_context():
             media_id = get_db().execute("SELECT media_id FROM media_item WHERE title = 'Second Story'").fetchone()[0]
-        self.assertIn(b'LIB-00002', self.client.get(f"/librarian/titles/{media_id}/copies/new").data)
+        self.assertIn(b'name="quantity"', self.client.get(f"/librarian/titles/{media_id}/copies/new").data)
+        with self.app.app_context():
+            self.assertEqual(get_db().execute("SELECT COUNT(*) FROM media_copy WHERE media_id = ?", (media_id,)).fetchone()[0], 1)
         self.assertEqual(self.client.post(f"/librarian/titles/{media_id}/copies/new", data={
-            "csrf_token": token, "accession": "COPY-002",
+            "csrf_token": token, "quantity": "100",
         }).status_code, 302)
-        self.assertIn(b"Second Story", self.client.get("/").data)
+        with self.app.app_context():
+            rows = get_db().execute("SELECT accession_number FROM media_copy WHERE media_id = ?", (media_id,)).fetchall()
+            self.assertEqual(len(rows), 101)
+            self.assertEqual(len({row[0] for row in rows}), 101)
+        self.assertIn(b"Second Story", self.client.get("/librarian").data)
         self.assertEqual(self.client.get(f"/librarian/titles/{media_id}/edit").status_code, 200)
 
     def test_sign_in_returns_member_to_chosen_title(self):

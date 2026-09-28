@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="staff-shell">
+  {% include "librarian/_rail.html" %}
+  <div class="staff-main">
+    <header class="staff-topbar">
+      <div class="staff-top-title"><strong>{% block workspace_title %}{% endblock %}</strong></div>
+      <a class="staff-small-action" href="{{ url_for('librarian_open_library') }}">＋ Add new book</a>
+      <div class="staff-account">{% include "partials/_notification_link.html" %}<span class="staff-account-name">{{ current_user.username }}</span><span class="staff-avatar" aria-hidden="true">{{ current_user.username[:2]|upper }}</span></div>
+    </header>
+    <div class="staff-content">{% block workspace_content %}{% endblock %}</div>
+  </div>
+</div>
+{% endblock %}

@@ -25,7 +25,7 @@ def require_role(role):
         def wrapped(*args, **kwargs):
             if g.user is None:
                 return redirect(url_for("login"))
-            if g.user["role"] != role:
+            if g.user["role"] not in (role if isinstance(role, tuple) else (role,)):
                 abort(403)
             return view(*args, **kwargs)
         return wrapped

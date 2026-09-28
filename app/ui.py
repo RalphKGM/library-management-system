@@ -7,8 +7,9 @@ from app.sample_catalog import CATEGORIES
 from app.security import require_role
 from app.services.borrowing import borrow_copy, get_borrowing_history, return_copy
 from app.services.helpers import calculate_progress
-from app.services.media import add_copy, add_media, get_available_copies, update_media
+from app.services.media import add_copies, add_media, get_available_copies, update_media
 from app.services.open_library import import_book, search_books
+from app.services.notifications import inbox, mark_read, unread_count
 from app.services.members import authenticate_account, register_member
 from app.services.reading import (
     add_bookmark, get_all_progress, get_bookmarks, get_progress,
@@ -73,14 +74,6 @@ def _return_to_work():
     return target if re.fullmatch(r"/works/\d+", target) else None
 
 
-def _suggest_accession():
-    db = get_db()
-    number = db.execute("SELECT COALESCE(MAX(copy_id), 0) + 1 FROM media_copy").fetchone()[0]
-    while db.execute("SELECT 1 FROM media_copy WHERE accession_number = ?", (f"LIB-{number:05d}",)).fetchone():
-        number += 1
-    return f"LIB-{number:05d}"
-
-
 def register_ui(app):
     @app.context_processor
     def catalog_globals():
@@ -88,10 +81,40 @@ def register_ui(app):
         for row in get_db().execute("SELECT DISTINCT category FROM media_item ORDER BY category"):
             if row["category"] not in categories:
                 categories.append(row["category"])
-        return {"categories": categories}
+        count = unread_count(g.user["role"], g.user["id"]) if g.user else 0
+        return {"categories": categories, "notification_count": count}
+
+    @app.get("/notifications")
+    @require_role(("member", "librarian"))
+    def notifications():
+        return render_template(
+            "notifications.html",
+            notifications=inbox(g.user["role"], g.user["id"]),
+        )
+
+    @app.post("/notifications/read")
+    @require_role(("member", "librarian"))
+    def notifications_read_all():
+        mark_read(g.user["role"], g.user["id"])
+        return redirect(url_for("notifications"))
+
+    @app.post("/notifications/<int:notification_id>/read")
+    @require_role(("member", "librarian"))
+    def notifications_read(notification_id):
+        row = get_db().execute(
+            "SELECT target FROM notification WHERE notification_id = ? "
+            "AND recipient_role = ? AND recipient_id = ?",
+            (notification_id, g.user["role"], g.user["id"]),
+        ).fetchone()
+        if row is None:
+            abort(404)
+        mark_read(g.user["role"], g.user["id"], notification_id)
+        return redirect(row["target"])
 
     @app.get("/")
     def browse():
+        if g.user and g.user["role"] == "librarian":
+            return redirect(url_for("librarian"))
         works = _catalog()
         query = request.args.get("q", "").strip().casefold()
         category = request.args.get("category", "").strip()
@@ -118,6 +141,8 @@ def register_ui(app):
 
     @app.get("/works/<int:media_id>")
     def work_detail(media_id):
+        if g.user and g.user["role"] == "librarian":
+            return redirect(url_for("librarian_edit_title", media_id=media_id))
         work = _work(media_id)
         if work is None:
             abort(404)
@@ -259,10 +284,68 @@ def register_ui(app):
         flash("Signed out.", "success")
         return redirect(url_for("browse"))
 
+    @app.get("/settings")
+    @require_role(("member", "librarian"))
+    def settings():
+        return render_template("settings.html")
+
     @app.get("/librarian")
     @require_role("librarian")
     def librarian():
-        return render_template("librarian/index.html", works=_catalog())
+        db = get_db()
+        members = db.execute(
+            "SELECT m.member_id, m.full_name, m.username, m.registered_at, "
+            "COUNT(b.borrowing_id) AS borrowed "
+            "FROM member m LEFT JOIN borrowing_record b ON b.member_id = m.member_id "
+            "AND b.returned_at IS NULL "
+            "GROUP BY m.member_id ORDER BY m.registered_at DESC, m.member_id DESC LIMIT 5"
+        ).fetchall()
+        totals = db.execute(
+            "SELECT (SELECT COUNT(*) FROM member) AS members, "
+            "(SELECT COUNT(*) FROM borrowing_record WHERE returned_at IS NULL) AS on_loan"
+        ).fetchone()
+        return render_template("librarian/index.html", works=_catalog(), members=members, totals=totals)
+
+    @app.get("/librarian/books")
+    @require_role("librarian")
+    def librarian_books():
+        return render_template("librarian/books.html", works=_catalog())
+
+    @app.get("/librarian/members")
+    @require_role("librarian")
+    def librarian_members():
+        members = get_db().execute(
+            "SELECT m.member_id, m.full_name, m.username, m.registered_at, "
+            "COUNT(b.borrowing_id) AS on_loan FROM member m "
+            "LEFT JOIN borrowing_record b ON b.member_id = m.member_id AND b.returned_at IS NULL "
+            "GROUP BY m.member_id ORDER BY m.registered_at DESC, m.member_id DESC"
+        ).fetchall()
+        return render_template("librarian/members.html", members=members)
+
+    @app.get("/librarian/loans")
+    @require_role("librarian")
+    def librarian_loans():
+        loans = get_db().execute(
+            "SELECT b.borrowing_id, b.borrowed_at, b.returned_at, "
+            "m.full_name, i.title, c.accession_number "
+            "FROM borrowing_record b JOIN member m ON m.member_id = b.member_id "
+            "JOIN media_copy c ON c.copy_id = b.copy_id "
+            "JOIN media_item i ON i.media_id = c.media_id "
+            "ORDER BY (b.returned_at IS NULL) DESC, b.borrowed_at DESC, b.borrowing_id DESC"
+        ).fetchall()
+        return render_template("librarian/loans.html", loans=loans)
+
+    @app.get("/librarian/copies")
+    @require_role("librarian")
+    def librarian_copies():
+        copies = get_db().execute(
+            "SELECT c.copy_id, c.media_id, c.accession_number, m.title, m.author, "
+            "b.borrowing_id AS active_loan "
+            "FROM media_copy c JOIN media_item m ON m.media_id = c.media_id "
+            "LEFT JOIN borrowing_record b ON b.copy_id = c.copy_id AND b.returned_at IS NULL "
+            "ORDER BY m.title COLLATE NOCASE, c.copy_id"
+        ).fetchall()
+        return render_template("librarian/copies.html", copies=copies)
 
     @app.get("/librarian/open-library")
     @require_role("librarian")
@@ -280,12 +363,13 @@ def register_ui(app):
     @require_role("librarian")
     def librarian_import_open_library():
         try:
-            work = import_book(request.form.get("import_token"), request.form.get("category"), g.user["id"])
+            work = import_book(request.form.get("import_token"), g.user["id"])
+            add_copies(work["media_id"], 1, g.user["id"])
         except ValueError as exc:
             flash(str(exc), "error")
             return redirect(url_for("librarian_open_library"))
-        flash("Title imported. Add a physical copy to make it borrowable.", "success")
-        return redirect(url_for("librarian_add_copy", media_id=work["media_id"]))
+        flash("Book and first copy added.", "success")
+        return redirect(url_for("librarian_books"))
 
     @app.route("/librarian/titles/new", methods=["GET", "POST"])
     @require_role("librarian")
@@ -293,11 +377,12 @@ def register_ui(app):
         if request.method == "POST":
             try:
                 work = add_media(_media_data(request.form), g.user["id"])
+                add_copies(work["media_id"], 1, g.user["id"])
             except ValueError as exc:
                 flash(str(exc), "error")
             else:
-                flash("Title added.", "success")
-                return redirect(url_for("librarian_add_copy", media_id=work["media_id"]))
+                flash("Book and first copy added.", "success")
+                return redirect(url_for("librarian_books"))
         return render_template("librarian/title_form.html", work=None, mode="Add")
 
     @app.route("/librarian/titles/<int:media_id>/edit", methods=["GET", "POST"])
@@ -324,10 +409,11 @@ def register_ui(app):
             abort(404)
         if request.method == "POST":
             try:
-                add_copy(media_id, request.form.get("accession", ""), g.user["id"])
+                quantity = _whole_number(request.form.get("quantity"), "quantity")
+                add_copies(media_id, quantity, g.user["id"])
             except ValueError as exc:
                 flash(str(exc), "error")
             else:
-                flash("Physical copy added.", "success")
-                return redirect(url_for("librarian"))
-        return render_template("librarian/copy_form.html", work=work, suggested_accession=_suggest_accession())
+                flash(f"{quantity} physical {'copy' if quantity == 1 else 'copies'} added.", "success")
+                return redirect(url_for("librarian_copies"))
+        return render_template("librarian/copy_form.html", work=work)

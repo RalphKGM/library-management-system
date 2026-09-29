@@ -1,4 +1,5 @@
 import sqlite3
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -83,3 +84,67 @@ def init_app(app):
                 )
         db.commit()
         click.echo("Sample catalog added.")
+
+    @app.cli.command("seed-demo")
+    @click.option("--password", default="DemoReader2026!", show_default=True)
+    def seed_demo_command(password):
+        from app.sample_catalog import CATEGORIES
+        from app.services.media import add_copies, add_media
+        from app.services.members import register_member
+
+        init_db()
+        db = get_db()
+        staff = db.execute("SELECT librarian_id FROM librarian ORDER BY librarian_id LIMIT 1").fetchone()
+        if staff is None:
+            raise click.ClickException("Create a librarian account before loading demo data.")
+        dataset_path = Path(__file__).parent / "data" / "demo_open_library.json"
+        dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
+        candidates = dataset["books"]
+        existing_keys = {
+            row["source_key"] for row in db.execute(
+                "SELECT source_key FROM media_item WHERE source_key IS NOT NULL"
+            )
+        }
+        stock_levels = (1, 4, 2, 7, 0, 3, 6, 2, 5, 8)
+        added_books = 0
+        added_copies = 0
+        for category_index, category in enumerate(CATEGORIES):
+            current = db.execute(
+                "SELECT COUNT(*) FROM media_item WHERE category = ?", (category,)
+            ).fetchone()[0]
+            needed = max(0, 10 - current)
+            available = [
+                book for book in candidates
+                if book["category"] == category and book["source_key"] not in existing_keys
+            ]
+            if len(available) < needed:
+                raise click.ClickException(f"Not enough Open Library books for {category}.")
+            for index, book in enumerate(available[:needed]):
+                work = add_media({
+                    "title": book["title"], "author": book["author"],
+                    "category": category, "cover": book["cover"],
+                    "source_key": book["source_key"],
+                }, staff["librarian_id"])
+                stock = stock_levels[(category_index * 2 + index) % len(stock_levels)]
+                if stock:
+                    add_copies(work["media_id"], stock, staff["librarian_id"])
+                existing_keys.add(book["source_key"])
+                added_books += 1
+                added_copies += stock
+        names = (
+            "Alex Rivera", "Sam Santos", "Jamie Cruz", "Taylor Reyes", "Morgan Lim",
+            "Casey Navarro", "Riley Tan", "Jordan Garcia", "Avery Mendoza", "Drew Flores",
+        )
+        added_members = 0
+        for index, name in enumerate(names, 1):
+            username = f"demo_reader_{index:02d}"
+            if db.execute("SELECT 1 FROM member WHERE username = ?", (username,)).fetchone():
+                continue
+            register_member(name, username, password)
+            added_members += 1
+        click.echo(
+            f"Added {added_books} Open Library books, {added_copies} copies, "
+            f"and {added_members} demo members."
+        )
+        click.echo("Demo member usernames: demo_reader_01 through demo_reader_10")
+        click.echo(f"Demo member password: {password}")

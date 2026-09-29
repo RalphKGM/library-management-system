@@ -32,6 +32,18 @@ Open http://127.0.0.1:5000/. The catalog starts empty. Librarians can search Ope
 
 To create a librarian account, run `python -m flask --app app create-librarian` and enter a username and password when prompted. Member accounts are created through the website. The librarian command does not create a public registration route for staff.
 
+## Demo dataset
+
+Run `python -m flask --app app seed-demo` after creating a librarian. It fills each of the six categories to ten books, adds different numbers of physical copies, and creates ten demo members. Existing books and members stay in place, and running it again does not duplicate demo records. Some demo titles have zero copies so the unavailable state can be shown.
+
+The book records in [app/data/demo_open_library.json](app/data/demo_open_library.json) were fetched from the Open Library Subjects API. Each record keeps its Open Library work URL. [scripts/refresh_demo_catalog.py](scripts/refresh_demo_catalog.py) can refresh the snapshot from the API. The selected titles are relevant demo picks from subject results, not a measured popularity ranking.
+
+The seeded dataset is also exported as [data/demo_books.csv](data/demo_books.csv) and [data/demo_members.csv](data/demo_members.csv). Run `python scripts/export_demo_dataset.py` after changing the local catalog to refresh these files. The member CSV leaves out passwords.
+
+Demo member usernames are `demo_reader_01` through `demo_reader_10`. Their password is `DemoReader2026!`. Use `seed-demo --password YOUR_PASSWORD` to choose a different password before the first seed. This shared password is for local demos only.
+
+For a Windows group demo, share [dist/library-demo-windows.zip](dist/library-demo-windows.zip). Teammates extract the full ZIP and double-click `run-demo.bat`. It includes a separate SQLite demo database, 60 Open Library sourced books, ten mock members, and the `demo_staff` account with password `DemoStaff2026!`. Python 3.9 or newer must be installed. The first run installs Flask and needs internet access. The launcher opens the site in the default browser and keeps the server running until the command window is closed. [WINDOWS_DEMO_README.txt](WINDOWS_DEMO_README.txt) has the short handoff instructions.
+
 ## What each role can use
 
 | Role | Pages and actions |
@@ -40,7 +52,7 @@ To create a librarian account, run `python -m flask --app app create-librarian` 
 | Member | Guest pages plus My Library, borrowing, returns, reading progress, and bookmarks |
 | Librarian | Dashboard, Books, Members, Loans, Physical Copies, Open Library import, and title editing |
 
-Staff are sent to the dashboard when they open the home page. Members and guests use Browse. Signed-in users can open Settings to switch color themes. Notifications disappear after seven seconds or can be closed sooner. Navigation shows the pages for the signed-in role. The server also checks permissions on every protected page and action.
+Staff are sent to the dashboard when they open the home page. Members and guests use Browse. Signed-in users can open Settings to switch color themes. Short alerts disappear after seven seconds or can be closed sooner. Borrowing and return updates stay in the header bell dropdown until marked read. The bell shows an unread count for the signed-in user. Navigation shows the pages for the signed-in role. The server also checks permissions on every protected page and action.
 The sign-in form uses a single username and password flow and identifies the account type automatically. Members who sign in from a title page return to that title. Catalog filters keep the results section in view, while reading bookmarks use the member's saved page or chapter. Staff can add up to 500 physical copies at once without entering IDs.
 
 ## API

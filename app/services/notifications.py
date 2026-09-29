@@ -16,11 +16,11 @@ def notify_librarians(db, message):
         add_notification(db, "librarian", row["librarian_id"], message, "/librarian/loans")
 
 
-def inbox(role, recipient_id):
+def inbox(role, recipient_id, limit=100):
     return get_db().execute(
         "SELECT * FROM notification WHERE recipient_role = ? AND recipient_id = ? "
-        "ORDER BY notification_id DESC LIMIT 100",
-        (role, recipient_id),
+        "ORDER BY notification_id DESC LIMIT ?",
+        (role, recipient_id, limit),
     ).fetchall()
 
 
@@ -47,4 +47,13 @@ def mark_read(role, recipient_id, notification_id=None):
             "AND recipient_role = ? AND recipient_id = ? AND read_at IS NULL",
             (when, notification_id, role, recipient_id),
         )
+    db.commit()
+
+
+def clear_all(role, recipient_id):
+    db = get_db()
+    db.execute(
+        "DELETE FROM notification WHERE recipient_role = ? AND recipient_id = ?",
+        (role, recipient_id),
+    )
     db.commit()

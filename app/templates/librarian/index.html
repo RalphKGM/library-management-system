@@ -10,7 +10,7 @@
       <div class="staff-account">{% include "partials/_notification_link.html" %}<span class="staff-account-name">{{ current_user.username }}</span><span class="staff-avatar" aria-hidden="true">{{ current_user.username[:2]|upper }}</span></div>
     </header>
     <div class="staff-content">
-      <div class="staff-welcome"><div><span class="staff-kicker">LIBRARY OVERVIEW</span><h1>Hello, <em>{{ current_user.username }}!</em></h1><p>Here is what is happening in your library</p></div><a class="staff-primary" href="{{ url_for('librarian_open_library') }}"><span aria-hidden="true">＋</span> Add new book</a></div>
+      <div class="staff-welcome"><div><span class="staff-kicker">LIBRARY OVERVIEW</span><h1>Hello, <em>{{ current_user.username }}!</em></h1><p class="staff-system-line"><time data-dashboard-clock>Local time</time><span aria-hidden="true">·</span> System ready</p></div><a class="staff-primary" href="{{ url_for('librarian_open_library') }}"><span aria-hidden="true">＋</span> Add new book</a></div>
       <div class="staff-stats" aria-label="Library totals">
         <a class="staff-stat" href="{{ url_for('librarian_books') }}"><div><strong>{{ works|length }}</strong><span>Total titles</span></div><span class="stat-icon" aria-hidden="true">▤</span></a>
         <a class="staff-stat" href="{{ url_for('librarian_copies') }}"><div><strong>{{ works|sum(attribute='copies') }}</strong><span>Physical copies</span></div><span class="stat-icon" aria-hidden="true">▣</span></a>

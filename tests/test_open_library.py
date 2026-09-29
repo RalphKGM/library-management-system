@@ -37,7 +37,9 @@ class OpenLibraryTests(unittest.TestCase):
         self.assertEqual(search.status_code, 200)
         self.assertEqual(len(search.json), 1)
         with patch("app.services.open_library.urlopen", return_value=io.BytesIO(json.dumps(payload).encode())):
-            self.assertIn(b"The Story", self.client.get("/librarian/open-library?q=story").data)
+            page = self.client.get("/librarian/open-library?q=story")
+            self.assertIn(b"The Story", page.data)
+            self.assertIn(b"book-search-results-list", page.data)
         self.assertEqual(search.json[0]["cover"], "https://covers.openlibrary.org/b/id/456-M.jpg")
         self.assertEqual(search.json[0]["category"], "Novels")
         data = {"import_token": search.json[0]["import_token"]}

@@ -9,7 +9,7 @@ from app.services.borrowing import borrow_copy, get_borrowing_history, return_co
 from app.services.helpers import calculate_progress
 from app.services.media import add_copies, add_media, get_available_copies, update_media
 from app.services.open_library import import_book, search_books
-from app.services.notifications import inbox, mark_read, unread_count
+from app.services.notifications import clear_all, inbox, mark_read, unread_count
 from app.services.members import authenticate_account, register_member
 from app.services.reading import (
     add_bookmark, get_all_progress, get_bookmarks, get_progress,
@@ -82,21 +82,20 @@ def register_ui(app):
             if row["category"] not in categories:
                 categories.append(row["category"])
         count = unread_count(g.user["role"], g.user["id"]) if g.user else 0
-        return {"categories": categories, "notification_count": count}
-
-    @app.get("/notifications")
-    @require_role(("member", "librarian"))
-    def notifications():
-        return render_template(
-            "notifications.html",
-            notifications=inbox(g.user["role"], g.user["id"]),
-        )
+        items = inbox(g.user["role"], g.user["id"], 6) if g.user else []
+        return {"categories": categories, "notification_count": count, "notification_items": items}
 
     @app.post("/notifications/read")
     @require_role(("member", "librarian"))
     def notifications_read_all():
         mark_read(g.user["role"], g.user["id"])
-        return redirect(url_for("notifications"))
+        return redirect(url_for("librarian" if g.user["role"] == "librarian" else "member"))
+
+    @app.post("/notifications/clear")
+    @require_role(("member", "librarian"))
+    def notifications_clear_all():
+        clear_all(g.user["role"], g.user["id"])
+        return redirect(url_for("librarian" if g.user["role"] == "librarian" else "member"))
 
     @app.post("/notifications/<int:notification_id>/read")
     @require_role(("member", "librarian"))

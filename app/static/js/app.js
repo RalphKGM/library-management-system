@@ -8,15 +8,29 @@ if (toggle && nav) {
   })
 }
 
-const filterInput = document.querySelector('[data-table-filter]')
-const filterTable = document.querySelector('[data-filter-table]')
-if (filterInput && filterTable) {
+document.querySelectorAll('[data-table-filter]').forEach(filterInput => {
+  const filterTable = filterInput.closest('.staff-card, .admin-panel')?.querySelector('[data-filter-table]')
+  if (!filterTable) return
   filterInput.addEventListener('input', () => {
     const value = filterInput.value.trim().toLowerCase()
     filterTable.querySelectorAll('tbody tr').forEach(row => {
       row.hidden = value && !row.textContent.toLowerCase().includes(value)
     })
   })
+})
+
+const dashboardClock = document.querySelector('[data-dashboard-clock]')
+if (dashboardClock) {
+  const updateClock = () => {
+    const now = new Date()
+    dashboardClock.dateTime = now.toISOString()
+    dashboardClock.textContent = new Intl.DateTimeFormat(undefined, {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit'
+    }).format(now)
+  }
+  updateClock()
+  window.setInterval(updateClock, 60000)
 }
 
 const themeChoices = document.querySelectorAll('[data-theme-choice]')

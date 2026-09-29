@@ -1,0 +1,654 @@
+{
+  "source": "Open Library Subjects API",
+  "fetched_at": "2026-09-28T09:29:04.188033+00:00",
+  "books": [
+    {
+      "category": "Manga",
+      "source_key": "/works/OL5769568W",
+      "source_url": "https://openlibrary.org/works/OL5769568W",
+      "title": "Hi no tori",
+      "author": "Osamu Tezuka",
+      "cover": "https://covers.openlibrary.org/b/id/813877-M.jpg",
+      "first_publish_year": 1986
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL11766231W",
+      "source_url": "https://openlibrary.org/works/OL11766231W",
+      "title": "The Kurosagi corpse delivery service",
+      "author": "Eiji Ōtsuka, Eiji Ohtsuka, Housui Yamazaki",
+      "cover": "https://covers.openlibrary.org/b/id/869510-M.jpg",
+      "first_publish_year": 2006
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8755973W",
+      "source_url": "https://openlibrary.org/works/OL8755973W",
+      "title": "新世紀エヴァンゲリオン 8",
+      "author": "Yoshiyuki Sadamoto",
+      "cover": "https://covers.openlibrary.org/b/id/813555-M.jpg",
+      "first_publish_year": 1995
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8756038W",
+      "source_url": "https://openlibrary.org/works/OL8756038W",
+      "title": "Naruto 16",
+      "author": "Masashi Kishimoto",
+      "cover": "https://covers.openlibrary.org/b/id/5274604-M.jpg",
+      "first_publish_year": 1999
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8756227W",
+      "source_url": "https://openlibrary.org/works/OL8756227W",
+      "title": "Bleach―ブリーチ― 11",
+      "author": "Tite Kubo",
+      "cover": "https://covers.openlibrary.org/b/id/764974-M.jpg",
+      "first_publish_year": 2003
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL13738065W",
+      "source_url": "https://openlibrary.org/works/OL13738065W",
+      "title": "W Juliet",
+      "author": "Emura.",
+      "cover": "https://covers.openlibrary.org/b/id/8136106-M.jpg",
+      "first_publish_year": 2004
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8211773W",
+      "source_url": "https://openlibrary.org/works/OL8211773W",
+      "title": "犬夜叉 1",
+      "author": "高橋留美子",
+      "cover": "https://covers.openlibrary.org/b/id/991998-M.jpg",
+      "first_publish_year": 1997
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8756324W",
+      "source_url": "https://openlibrary.org/works/OL8756324W",
+      "title": "Death Note, Vol. 8",
+      "author": "Tsugumi Ohba, Takeshi Obata",
+      "cover": "https://covers.openlibrary.org/b/id/765240-M.jpg",
+      "first_publish_year": 2005
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL19719004W",
+      "source_url": "https://openlibrary.org/works/OL19719004W",
+      "title": "Twin star exorcists",
+      "author": "Yoshiaki Sukeno",
+      "cover": "https://covers.openlibrary.org/b/id/13437537-M.jpg",
+      "first_publish_year": 2015
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL5750784W",
+      "source_url": "https://openlibrary.org/works/OL5750784W",
+      "title": "Chobits, Vol. 1",
+      "author": "CLAMP",
+      "cover": "https://covers.openlibrary.org/b/id/957029-M.jpg",
+      "first_publish_year": 2001
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8752654W",
+      "source_url": "https://openlibrary.org/works/OL8752654W",
+      "title": "よつばと! 2",
+      "author": "あずまきよひこ",
+      "cover": "https://covers.openlibrary.org/b/id/1044568-M.jpg",
+      "first_publish_year": 2004
+    },
+    {
+      "category": "Manga",
+      "source_key": "/works/OL8400751W",
+      "source_url": "https://openlibrary.org/works/OL8400751W",
+      "title": "Yu-Gi-Oh 8",
+      "author": "Kazuki Takahashi",
+      "cover": "https://covers.openlibrary.org/b/id/863461-M.jpg",
+      "first_publish_year": 1998
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL17342469W",
+      "source_url": "https://openlibrary.org/works/OL17342469W",
+      "title": "Roller Girl",
+      "author": "Victoria Jamieson",
+      "cover": "https://covers.openlibrary.org/b/id/11327078-M.jpg",
+      "first_publish_year": 2014
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL276032W",
+      "source_url": "https://openlibrary.org/works/OL276032W",
+      "title": "Understanding Comics",
+      "author": "Scott McCloud",
+      "cover": "https://covers.openlibrary.org/b/id/10679940-M.jpg",
+      "first_publish_year": 1993
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL25886W",
+      "source_url": "https://openlibrary.org/works/OL25886W",
+      "title": "It's the Great Pumpkin, Charlie Brown",
+      "author": "Charles M. Schulz, Lee Mendelson, Maggie Testa",
+      "cover": "https://covers.openlibrary.org/b/id/9316433-M.jpg",
+      "first_publish_year": 1967
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL8842598W",
+      "source_url": "https://openlibrary.org/works/OL8842598W",
+      "title": "Amulet",
+      "author": "Kazu Kibuishi",
+      "cover": "https://covers.openlibrary.org/b/id/2420582-M.jpg",
+      "first_publish_year": 2008
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL20666248W",
+      "source_url": "https://openlibrary.org/works/OL20666248W",
+      "title": "Dragman",
+      "author": "Steven Appleby",
+      "cover": "https://covers.openlibrary.org/b/id/9333751-M.jpg",
+      "first_publish_year": 2020
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL21337755W",
+      "source_url": "https://openlibrary.org/works/OL21337755W",
+      "title": "Gender Queer",
+      "author": "Maia Kobabe",
+      "cover": "https://covers.openlibrary.org/b/id/15254604-M.jpg",
+      "first_publish_year": 2019
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL19659659W",
+      "source_url": "https://openlibrary.org/works/OL19659659W",
+      "title": "Cat Kid Comic Club",
+      "author": "Dav Pilkey",
+      "cover": "https://covers.openlibrary.org/b/id/14424590-M.jpg",
+      "first_publish_year": 2020
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL20757578W",
+      "source_url": "https://openlibrary.org/works/OL20757578W",
+      "title": "When Stars Are Scattered",
+      "author": "Victoria Jamieson",
+      "cover": "https://covers.openlibrary.org/b/id/15089658-M.jpg",
+      "first_publish_year": 2020
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL2756365W",
+      "source_url": "https://openlibrary.org/works/OL2756365W",
+      "title": "Batman",
+      "author": "Craig Shaw Gardner, Warren Skaaren, Bob Kane",
+      "cover": "https://covers.openlibrary.org/b/id/6385028-M.jpg",
+      "first_publish_year": 1989
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL17623120W",
+      "source_url": "https://openlibrary.org/works/OL17623120W",
+      "title": "Phoebe and Her Unicorn",
+      "author": "Dana Simpson",
+      "cover": "https://covers.openlibrary.org/b/id/7900566-M.jpg",
+      "first_publish_year": 2014
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL1818513W",
+      "source_url": "https://openlibrary.org/works/OL1818513W",
+      "title": "Identity Crisis",
+      "author": "Brad Meltzer, Rags Morales, Michael Bair",
+      "cover": "https://covers.openlibrary.org/b/id/749260-M.jpg",
+      "first_publish_year": 2005
+    },
+    {
+      "category": "Comics",
+      "source_key": "/works/OL20659134W",
+      "source_url": "https://openlibrary.org/works/OL20659134W",
+      "title": "The Complete Peanuts, 1950 to 1952",
+      "author": "Charles M. Schulz",
+      "cover": "https://covers.openlibrary.org/b/id/9320864-M.jpg",
+      "first_publish_year": 2004
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL53908W",
+      "source_url": "https://openlibrary.org/works/OL53908W",
+      "title": "Adventures of Huckleberry Finn",
+      "author": "Mark Twain",
+      "cover": "https://covers.openlibrary.org/b/id/8157718-M.jpg",
+      "first_publish_year": 1876
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL9170454W",
+      "source_url": "https://openlibrary.org/works/OL9170454W",
+      "title": "Hamlet",
+      "author": "William Shakespeare",
+      "cover": "https://covers.openlibrary.org/b/id/8281954-M.jpg",
+      "first_publish_year": 1603
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL8193478W",
+      "source_url": "https://openlibrary.org/works/OL8193478W",
+      "title": "Oliver Twist",
+      "author": "Charles Dickens",
+      "cover": "https://covers.openlibrary.org/b/id/13300802-M.jpg",
+      "first_publish_year": 1822
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL450063W",
+      "source_url": "https://openlibrary.org/works/OL450063W",
+      "title": "Frankenstein; or, The Modern Prometheus",
+      "author": "Mary Shelley",
+      "cover": "https://covers.openlibrary.org/b/id/12356249-M.jpg",
+      "first_publish_year": 1818
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL66562W",
+      "source_url": "https://openlibrary.org/works/OL66562W",
+      "title": "Sense and Sensibility",
+      "author": "Jane Austen",
+      "cover": "https://covers.openlibrary.org/b/id/9278292-M.jpg",
+      "first_publish_year": 1811
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL8193465W",
+      "source_url": "https://openlibrary.org/works/OL8193465W",
+      "title": "A Tale of Two Cities",
+      "author": "Charles Dickens",
+      "cover": "https://covers.openlibrary.org/b/id/13301713-M.jpg",
+      "first_publish_year": 1800
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL24034W",
+      "source_url": "https://openlibrary.org/works/OL24034W",
+      "title": "Treasure Island",
+      "author": "Robert Louis Stevenson",
+      "cover": "https://covers.openlibrary.org/b/id/13859660-M.jpg",
+      "first_publish_year": 1880
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL85892W",
+      "source_url": "https://openlibrary.org/works/OL85892W",
+      "title": "Dracula",
+      "author": "Bram Stoker",
+      "cover": "https://covers.openlibrary.org/b/id/12216503-M.jpg",
+      "first_publish_year": 1897
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL29983W",
+      "source_url": "https://openlibrary.org/works/OL29983W",
+      "title": "Little Women",
+      "author": "Louisa May Alcott",
+      "cover": "https://covers.openlibrary.org/b/id/8775559-M.jpg",
+      "first_publish_year": 1848
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL258902W",
+      "source_url": "https://openlibrary.org/works/OL258902W",
+      "title": "Macbeth",
+      "author": "William Shakespeare",
+      "cover": "https://covers.openlibrary.org/b/id/872432-M.jpg",
+      "first_publish_year": 1508
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL258850W",
+      "source_url": "https://openlibrary.org/works/OL258850W",
+      "title": "Othello",
+      "author": "William Shakespeare",
+      "cover": "https://covers.openlibrary.org/b/id/7165018-M.jpg",
+      "first_publish_year": 1622
+    },
+    {
+      "category": "Literature",
+      "source_key": "/works/OL20600W",
+      "source_url": "https://openlibrary.org/works/OL20600W",
+      "title": "Gulliver's Travels",
+      "author": "Jonathan Swift",
+      "cover": "https://covers.openlibrary.org/b/id/12717083-M.jpg",
+      "first_publish_year": 1726
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL5735363W",
+      "source_url": "https://openlibrary.org/works/OL5735363W",
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "cover": "https://covers.openlibrary.org/b/id/12646537-M.jpg",
+      "first_publish_year": 2008
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL40873W",
+      "source_url": "https://openlibrary.org/works/OL40873W",
+      "title": "The Road",
+      "author": "Cormac McCarthy",
+      "cover": "https://covers.openlibrary.org/b/id/198120-M.jpg",
+      "first_publish_year": 2006
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL11999891W",
+      "source_url": "https://openlibrary.org/works/OL11999891W",
+      "title": "The Help",
+      "author": "Kathryn Stockett, Álvaro Abella Villar, Alvaro Abella",
+      "cover": "https://covers.openlibrary.org/b/id/8387264-M.jpg",
+      "first_publish_year": 2009
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL50565W",
+      "source_url": "https://openlibrary.org/works/OL50565W",
+      "title": "The Bluest Eye",
+      "author": "Toni Morrison",
+      "cover": "https://covers.openlibrary.org/b/id/15152696-M.jpg",
+      "first_publish_year": 1970
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL15168588W",
+      "source_url": "https://openlibrary.org/works/OL15168588W",
+      "title": "The Passage",
+      "author": "Justin Cronin",
+      "cover": "https://covers.openlibrary.org/b/id/8261369-M.jpg",
+      "first_publish_year": 2010
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL38501W",
+      "source_url": "https://openlibrary.org/works/OL38501W",
+      "title": "Snow Crash",
+      "author": "Neal Stephenson",
+      "cover": "https://covers.openlibrary.org/b/id/392508-M.jpg",
+      "first_publish_year": 1992
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL20150260W",
+      "source_url": "https://openlibrary.org/works/OL20150260W",
+      "title": "Normal People",
+      "author": "Sally Rooney",
+      "cover": "https://covers.openlibrary.org/b/id/8794265-M.jpg",
+      "first_publish_year": 2018
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL19781733W",
+      "source_url": "https://openlibrary.org/works/OL19781733W",
+      "title": "Eleanor Oliphant is Completely Fine",
+      "author": "Gail Honeyman",
+      "cover": "https://covers.openlibrary.org/b/id/8415055-M.jpg",
+      "first_publish_year": 2017
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL88877W",
+      "source_url": "https://openlibrary.org/works/OL88877W",
+      "title": "Maurice",
+      "author": "E. M. Forster",
+      "cover": "https://covers.openlibrary.org/b/id/1364882-M.jpg",
+      "first_publish_year": 1971
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL26398W",
+      "source_url": "https://openlibrary.org/works/OL26398W",
+      "title": "Memento Mori",
+      "author": "Muriel Spark",
+      "cover": "https://covers.openlibrary.org/b/id/94644-M.jpg",
+      "first_publish_year": 1958
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL138395W",
+      "source_url": "https://openlibrary.org/works/OL138395W",
+      "title": "Hannibal Rising",
+      "author": "Thomas Harris",
+      "cover": "https://covers.openlibrary.org/b/id/9257616-M.jpg",
+      "first_publish_year": 2006
+    },
+    {
+      "category": "Novels",
+      "source_key": "/works/OL77840W",
+      "source_url": "https://openlibrary.org/works/OL77840W",
+      "title": "The Feast of All Saints",
+      "author": "Anne Rice",
+      "cover": "https://covers.openlibrary.org/b/id/9324125-M.jpg",
+      "first_publish_year": 1979
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL17806219W",
+      "source_url": "https://openlibrary.org/works/OL17806219W",
+      "title": "Imagi-Movies",
+      "author": "Cinefantastique",
+      "cover": "https://covers.openlibrary.org/b/id/8091990-M.jpg",
+      "first_publish_year": 1993
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL24142686W",
+      "source_url": "https://openlibrary.org/works/OL24142686W",
+      "title": "ONE PIECE Magazine 1",
+      "author": "尾田栄一郎, Shueisha",
+      "cover": "https://covers.openlibrary.org/b/id/10540359-M.jpg",
+      "first_publish_year": 2017
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL9879446W",
+      "source_url": "https://openlibrary.org/works/OL9879446W",
+      "title": "Discovery Girls, January 2007 Issue",
+      "author": "Discovery Girls Inc",
+      "cover": "https://covers.openlibrary.org/b/id/2933629-M.jpg",
+      "first_publish_year": 2006
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL42472009W",
+      "source_url": "https://openlibrary.org/works/OL42472009W",
+      "title": "Gilbert Magazine",
+      "author": "Dale Alquist",
+      "cover": "https://covers.openlibrary.org/b/id/14839936-M.jpg",
+      "first_publish_year": 2024
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL20209121W",
+      "source_url": "https://openlibrary.org/works/OL20209121W",
+      "title": "Portland Review Spring 2017",
+      "author": "David Naimon (interviewer), Joanna Klink, Margaret Malone",
+      "cover": "https://covers.openlibrary.org/b/id/8859718-M.jpg",
+      "first_publish_year": 2017
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL20239868W",
+      "source_url": "https://openlibrary.org/works/OL20239868W",
+      "title": "Reader's Digest March 1941",
+      "author": "Various Authors (edited by Readers Digest)",
+      "cover": "https://covers.openlibrary.org/b/id/8894513-M.jpg",
+      "first_publish_year": 1941
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL20321810W",
+      "source_url": "https://openlibrary.org/works/OL20321810W",
+      "title": "Clarkesworld Magazine, Issue 90, March 2014",
+      "author": "Neil Clarke, Seth Dickinson, Thoraiya Dyer",
+      "cover": "https://covers.openlibrary.org/b/id/8983545-M.jpg",
+      "first_publish_year": 2014
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL24313606W",
+      "source_url": "https://openlibrary.org/works/OL24313606W",
+      "title": "Analog Science Fiction and Fact, March 1989",
+      "author": "Harry Turtledove, Charles Sheffield, Michael Flynn",
+      "cover": "https://covers.openlibrary.org/b/id/10830639-M.jpg",
+      "first_publish_year": 1989
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL19910865W",
+      "source_url": "https://openlibrary.org/works/OL19910865W",
+      "title": "Galaxy's Edge Magazine",
+      "author": "Heidi Ruby Miller, Eric Flint, Laurie Tom",
+      "cover": "https://covers.openlibrary.org/b/id/8734262-M.jpg",
+      "first_publish_year": 2013
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL19914271W",
+      "source_url": "https://openlibrary.org/works/OL19914271W",
+      "title": "Apex Magazine May 2018",
+      "author": "Cherie Priest, Matthew Sanborn Smith, Nisi Shawl",
+      "cover": "https://covers.openlibrary.org/b/id/8738378-M.jpg",
+      "first_publish_year": 2018
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL19634963W",
+      "source_url": "https://openlibrary.org/works/OL19634963W",
+      "title": "The Singularity magazine (Issue 2)",
+      "author": "Lee P. Hogg, Steve Jarratt, Steve Pease",
+      "cover": "https://covers.openlibrary.org/b/id/8542851-M.jpg",
+      "first_publish_year": 2015
+    },
+    {
+      "category": "Magazines",
+      "source_key": "/works/OL20239923W",
+      "source_url": "https://openlibrary.org/works/OL20239923W",
+      "title": "Ellery Queen - The World's Leading Mystery Magazine",
+      "author": "Ellery Queen",
+      "cover": "https://covers.openlibrary.org/b/id/8894706-M.jpg",
+      "first_publish_year": 1985
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL2056818W",
+      "source_url": "https://openlibrary.org/works/OL2056818W",
+      "title": "Maus I",
+      "author": "Art Spiegelman",
+      "cover": "https://covers.openlibrary.org/b/id/10210168-M.jpg",
+      "first_publish_year": 1986
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL267622W",
+      "source_url": "https://openlibrary.org/works/OL267622W",
+      "title": "Astérix le Gaulois",
+      "author": "René Goscinny, Albert Uderzo",
+      "cover": "https://covers.openlibrary.org/b/id/962725-M.jpg",
+      "first_publish_year": 1961
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL267610W",
+      "source_url": "https://openlibrary.org/works/OL267610W",
+      "title": "Astérix et Cléopâtre",
+      "author": "René Goscinny, Albert Uderzo",
+      "cover": "https://covers.openlibrary.org/b/id/499621-M.jpg",
+      "first_publish_year": 1965
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL151056W",
+      "source_url": "https://openlibrary.org/works/OL151056W",
+      "title": "Les cigares du pharaon",
+      "author": "Hergé",
+      "cover": "https://covers.openlibrary.org/b/id/3325898-M.jpg",
+      "first_publish_year": 1934
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL151051W",
+      "source_url": "https://openlibrary.org/works/OL151051W",
+      "title": "Le lotus bleu",
+      "author": "Hergé",
+      "cover": "https://covers.openlibrary.org/b/id/755245-M.jpg",
+      "first_publish_year": 1934
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL267607W",
+      "source_url": "https://openlibrary.org/works/OL267607W",
+      "title": "Astérix aux Jeux Olympiques",
+      "author": "René Goscinny, Albert Uderzo",
+      "cover": "https://covers.openlibrary.org/b/id/12328914-M.jpg",
+      "first_publish_year": 1968
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL267617W",
+      "source_url": "https://openlibrary.org/works/OL267617W",
+      "title": "Astérix chez les Bretons",
+      "author": "René Goscinny, Albert Uderzo",
+      "cover": "https://covers.openlibrary.org/b/id/499633-M.jpg",
+      "first_publish_year": 1966
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL267624W",
+      "source_url": "https://openlibrary.org/works/OL267624W",
+      "title": "Le Tour de Gaule d'Astérix",
+      "author": "René Goscinny, Albert Uderzo",
+      "cover": "https://covers.openlibrary.org/b/id/10545735-M.jpg",
+      "first_publish_year": 1965
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL267613W",
+      "source_url": "https://openlibrary.org/works/OL267613W",
+      "title": "Astérix et les Normands",
+      "author": "René Goscinny, Albert Uderzo",
+      "cover": "https://covers.openlibrary.org/b/id/13125359-M.jpg",
+      "first_publish_year": 1966
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL151078W",
+      "source_url": "https://openlibrary.org/works/OL151078W",
+      "title": "Les 7 boules de cristal",
+      "author": "Hergé",
+      "cover": "https://covers.openlibrary.org/b/id/8685043-M.jpg",
+      "first_publish_year": 1961
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL2694991W",
+      "source_url": "https://openlibrary.org/works/OL2694991W",
+      "title": "Romeo and Juliet (adaptation)",
+      "author": "William Shakespeare, John McDonald",
+      "cover": "https://covers.openlibrary.org/b/id/2326889-M.jpg",
+      "first_publish_year": 1748
+    },
+    {
+      "category": "Graphic Novels",
+      "source_key": "/works/OL258893W",
+      "source_url": "https://openlibrary.org/works/OL258893W",
+      "title": "Henry V [adaptation]",
+      "author": "William Shakespeare",
+      "cover": "https://covers.openlibrary.org/b/id/3049999-M.jpg",
+      "first_publish_year": 1805
+    }
+  ]
+}

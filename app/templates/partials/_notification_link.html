@@ -1,4 +1,28 @@
-<a class="notification-link" href="{{ url_for('notifications') }}" aria-label="Notifications{% if notification_count %}, {{ notification_count }} unread{% endif %}" title="Notifications">
-  <svg class="notification-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
-  {% if notification_count %}<span class="notification-badge">{{ notification_count if notification_count < 100 else '99+' }}</span>{% endif %}
-</a>
+<details class="notification-menu">
+  <summary class="notification-link" aria-label="Notifications{% if notification_count %}, {{ notification_count }} unread{% endif %}" title="Notifications">
+    <svg class="notification-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
+    {% if notification_count %}<span class="notification-badge">{{ notification_count if notification_count < 100 else '99+' }}</span>{% endif %}
+  </summary>
+  <div class="notification-dropdown">
+    <div class="notification-dropdown-head"><strong>Notifications</strong>{% if notification_count %}<span>{{ notification_count }} unread</span>{% endif %}</div>
+    {% if notification_items %}
+      <div class="notification-dropdown-list">
+        {% for item in notification_items %}
+          <form action="{{ url_for('notifications_read', notification_id=item.notification_id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="notification-dropdown-item {% if not item.read_at %}is-unread{% endif %}" type="submit">
+              <span class="notification-dot" aria-hidden="true"></span>
+              <span><strong>{{ item.message }}</strong><small>{{ item.created_at[:16].replace('T', ' ') }} UTC</small></span>
+            </button>
+          </form>
+        {% endfor %}
+      </div>
+      <div class="notification-menu-actions">
+        {% if notification_count %}<form action="{{ url_for('notifications_read_all') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Mark all read</button></form>{% endif %}
+        <form action="{{ url_for('notifications_clear_all') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Clear all</button></form>
+      </div>
+    {% else %}
+      <p class="notification-dropdown-empty">No notifications yet</p>
+    {% endif %}
+  </div>
+</details>

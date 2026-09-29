@@ -148,6 +148,44 @@ class LibraryWebsiteTests(unittest.TestCase):
         })
         self.assertEqual(response.location, f"/works/{self.media_id}")
 
+    def test_notifications_for_member_and_staff(self):
+        self.register()
+        token = self.csrf()
+        self.client.post(f"/works/{self.media_id}/borrow", data={"csrf_token": token})
+        self.assertEqual(self.client.get("/notifications").status_code, 404)
+        page = self.client.get("/member")
+        self.assertIn(b"You borrowed A Library Story.", page.data)
+        self.assertIn(b"1 unread", page.data)
+        staff = self.app.test_client()
+        staff.post("/login", data={
+            "csrf_token": self.csrf(staff), "username": "staff", "password": "staff-password",
+        })
+        self.assertIn(b"Test Reader borrowed A Library Story.", staff.get("/librarian").data)
+        with self.app.app_context():
+            member_notice = get_db().execute(
+                "SELECT notification_id FROM notification WHERE recipient_role = 'member'"
+            ).fetchone()[0]
+        self.assertEqual(staff.post(
+            f"/notifications/{member_notice}/read",
+            data={"csrf_token": self.csrf(staff)},
+        ).status_code, 404)
+        self.client.post("/notifications/read", data={"csrf_token": token})
+        self.assertNotIn(b"Mark all read", self.client.get("/member").data)
+        self.assertIn(b"Clear all", self.client.get("/member").data)
+        self.assertIn(b'notification-dropdown-item ', self.client.get("/member").data)
+        self.assertIn(b"1 unread", staff.get("/librarian").data)
+        with self.app.app_context():
+            borrowing_id = get_db().execute("SELECT borrowing_id FROM borrowing_record").fetchone()[0]
+        self.client.post(
+            f"/member/borrowings/{borrowing_id}/return",
+            data={"csrf_token": token},
+        )
+        self.assertIn(b"You returned A Library Story.", self.client.get("/member").data)
+        self.assertIn(b"Test Reader returned A Library Story.", staff.get("/librarian").data)
+        self.assertEqual(self.client.post("/notifications/clear", data={"csrf_token": token}).status_code, 302)
+        self.assertIn(b"No notifications yet", self.client.get("/member").data)
+        self.assertIn(b"Test Reader returned A Library Story.", staff.get("/librarian").data)
+
     def test_api_member_workflow(self):
         token = self.client.get("/api/session").json["csrf_token"]
         created = self.client.post("/api/members", json={

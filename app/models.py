@@ -59,3 +59,48 @@ class Bookmark:
     position: int
     created_at: str
     note: str = ""
+
+
+@dataclass
+class Genre:
+    genre_id: int
+    name: str
+    slug: str
+
+
+@dataclass
+class GenreRanking:
+    rank: int
+    genre: str
+    borrow_count: int
+    active_loans: int
+    title_count: int
+    share_percent: float
+    top_title: str
+
+
+@dataclass
+class BookTypeRanking:
+    rank: int
+    book_type: str
+    borrow_count: int
+    active_loans: int
+    total_titles: int
+    total_copies: int
+    circulation_rate: float
+    share_percent: float
+
+
+@dataclass
+class BookRanking:
+    rank: int
+    media_id: int
+    title: str
+    author: str
+    category: str
+    cover: str
+    borrow_count: int
+    copies: int
+    available: int
+    genres: list
+    is_popular: bool

@@ -41,7 +41,29 @@ def value_error(error):
 
 @api.get("/health")
 def health():
-    return {"status": "ok"}
+    from flask import current_app
+    try:
+        db = get_db()
+        book_count = db.execute("SELECT COUNT(*) FROM media_item").fetchone()[0]
+        member_count = db.execute("SELECT COUNT(*) FROM member").fetchone()[0]
+        staff_count = db.execute("SELECT COUNT(*) FROM librarian").fetchone()[0]
+        loan_count = db.execute("SELECT COUNT(*) FROM borrowing_record").fetchone()[0]
+        genre_count = db.execute("SELECT COUNT(*) FROM genre").fetchone()[0]
+        return {
+            "status": "ok",
+            "server": "online",
+            "database": "connected",
+            "database_file": current_app.config.get("DATABASE"),
+            "counts": {
+                "books": book_count,
+                "members": member_count,
+                "staff": staff_count,
+                "loans": loan_count,
+                "genres": genre_count,
+            },
+        }
+    except Exception as exc:
+        return {"status": "error", "database": "disconnected", "error": str(exc)}, 500
 
 
 @api.get("/session")
@@ -86,10 +108,16 @@ def delete_session():
 
 
 @api.get("/open-library/search")
-def search_open_library():
+@api.get("/books/search")
+def search_external_books():
     _role("librarian")
+    provider = request.args.get("provider", "openlibrary").strip().lower()
+    query = request.args.get("q", "")
     try:
-        return jsonify(search_books(request.args.get("q", "")))
+        if provider == "googlebooks":
+            from app.services.google_books import search_google_books
+            return jsonify(search_google_books(query))
+        return jsonify(search_books(query))
     except ConnectionError as exc:
         return jsonify(error=str(exc)), 503
 
@@ -196,3 +224,35 @@ def delete_bookmark(bookmark_id):
     if not remove_bookmark(g.user["id"], bookmark_id):
         abort(404)
     return "", 204
+
+
+@api.get("/analytics/top-genres")
+def api_top_genres():
+    _role("librarian")
+    from app.services.analytics import get_top_genres_borrowed
+    return jsonify(get_top_genres_borrowed())
+
+
+@api.get("/analytics/top-book-types")
+def api_top_book_types():
+    _role("librarian")
+    from app.services.analytics import get_top_book_types_borrowed
+    return jsonify(get_top_book_types_borrowed())
+
+
+@api.get("/analytics/book-rankings")
+def api_book_rankings():
+    _role("librarian")
+    from app.services.analytics import get_book_borrowing_rankings
+    return jsonify(get_book_borrowing_rankings())
+
+
+@api.route("/media/<int:media_id>/genres", methods=["GET", "PUT"])
+def media_genres_route(media_id):
+    from app.services.media import get_media_genres, set_media_genres
+    if request.method == "PUT":
+        _role("librarian")
+        data = _body()
+        genres = data.get("genres", [])
+        return jsonify(set_media_genres(media_id, genres))
+    return jsonify(get_media_genres(media_id))

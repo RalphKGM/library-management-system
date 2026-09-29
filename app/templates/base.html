@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}The Reading Room{% endblock %}</title>
   <script>try { const theme = localStorage.getItem('library-theme'); if (['rose', 'charcoal', 'coastal', 'orchid', 'midnight'].includes(theme)) document.documentElement.dataset.theme = theme } catch (_) {}</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body class="{% if request.endpoint in ('librarian', 'librarian_books', 'librarian_members', 'librarian_loans', 'librarian_copies') %}staff-dashboard-body{% endif %}">

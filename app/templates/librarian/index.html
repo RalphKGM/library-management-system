@@ -5,24 +5,206 @@
   {% include "librarian/_rail.html" %}
   <div class="staff-main">
     <header class="staff-topbar">
-      <div class="staff-top-title"><span class="staff-menu-icon" aria-hidden="true">☰</span><strong>Dashboard</strong></div>
+      <div class="staff-top-title"><i class="bi bi-list staff-menu-icon" aria-hidden="true"></i><strong>Dashboard</strong></div>
       <div></div>
       <div class="staff-account">{% include "partials/_notification_link.html" %}<span class="staff-account-name">{{ current_user.username }}</span><span class="staff-avatar" aria-hidden="true">{{ current_user.username[:2]|upper }}</span></div>
     </header>
     <div class="staff-content">
-      <div class="staff-welcome"><div><span class="staff-kicker">LIBRARY OVERVIEW</span><h1>Hello, <em>{{ current_user.username }}!</em></h1><p class="staff-system-line"><time data-dashboard-clock>Local time</time><span aria-hidden="true">·</span> System ready</p></div><a class="staff-primary" href="{{ url_for('librarian_open_library') }}"><span aria-hidden="true">＋</span> Add new book</a></div>
+      <div class="staff-welcome"><div><span class="staff-kicker">LIBRARY OVERVIEW</span><h1>Hello, <em>{{ current_user.username }}!</em></h1><p class="staff-system-line"><time data-dashboard-clock>Local time</time><span aria-hidden="true">·</span> System ready</p></div><a class="staff-primary" href="{{ url_for('librarian_open_library') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add new book</a></div>
       <div class="staff-stats" aria-label="Library totals">
-        <a class="staff-stat" href="{{ url_for('librarian_books') }}"><div><strong>{{ works|length }}</strong><span>Total titles</span></div><span class="stat-icon" aria-hidden="true">▤</span></a>
-        <a class="staff-stat" href="{{ url_for('librarian_copies') }}"><div><strong>{{ works|sum(attribute='copies') }}</strong><span>Physical copies</span></div><span class="stat-icon" aria-hidden="true">▣</span></a>
-        <a class="staff-stat" href="{{ url_for('librarian_loans') }}"><div><strong>{{ totals.on_loan }}</strong><span>Books on loan</span></div><span class="stat-icon" aria-hidden="true">⇄</span></a>
-        <a class="staff-stat" href="{{ url_for('librarian_members') }}"><div><strong>{{ totals.members }}</strong><span>Members</span></div><span class="stat-icon" aria-hidden="true">♙</span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_books') }}"><div><strong>{{ works|length }}</strong><span>Total titles</span></div><span class="stat-icon" aria-hidden="true"><i class="bi bi-book-half"></i></span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_copies') }}"><div><strong>{{ works|sum(attribute='copies') }}</strong><span>Physical copies</span></div><span class="stat-icon" aria-hidden="true"><i class="bi bi-journals"></i></span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_loans') }}"><div><strong>{{ totals.on_loan }}</strong><span>Books on loan</span></div><span class="stat-icon" aria-hidden="true"><i class="bi bi-arrow-left-right"></i></span></a>
+        <a class="staff-stat" href="{{ url_for('librarian_members') }}"><div><strong>{{ totals.members }}</strong><span>Members</span></div><span class="stat-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></span></a>
       </div>
-      <div class="staff-panels">
+      <!-- Circulation & Analytics Dashboard Sheets -->
+      <section class="staff-card staff-sheets-card" style="margin-top: 24px;">
+        <div class="staff-card-head" style="align-items: center; justify-content: space-between;">
+          <div>
+            <span class="staff-kicker" style="display: block; font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 0.05em;">CIRCULATION INTELLIGENCE</span>
+            <h2>Circulation &amp; Popularity Sheets</h2>
+            <p>Live rankings for top genres borrowed, media formats, and book borrow leaderboards</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <a class="staff-small-action" href="{{ url_for('librarian_analytics') }}" style="font-weight: 700;">Full Analytics Sheets &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Sheet Tabs Header -->
+        <div class="dash-sheet-tabs" role="tablist">
+          <button type="button" class="dash-tab-btn is-active" onclick="switchDashSheet('genres', this)" role="tab" aria-selected="true">
+            <i class="bi bi-tag-fill" aria-hidden="true"></i> <strong>Top Genres Borrowed</strong> ({{ top_genres|length }})
+          </button>
+          <button type="button" class="dash-tab-btn" onclick="switchDashSheet('types', this)" role="tab" aria-selected="false">
+            <i class="bi bi-book-fill" aria-hidden="true"></i> <strong>Top Book Types</strong> ({{ top_types|length }})
+          </button>
+          <button type="button" class="dash-tab-btn" onclick="switchDashSheet('rankings', this)" role="tab" aria-selected="false">
+            <i class="bi bi-trophy-fill" aria-hidden="true"></i> <strong>Book Borrowing Rankings</strong> ({{ book_rankings|length }})
+          </button>
+        </div>
+
+        <!-- Sheet 1: Top Genres -->
+        <div class="dash-sheet-panel is-active" id="dash-sheet-genres">
+          <div class="staff-table-scroll">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Rank</th>
+                  <th>Genre Tag</th>
+                  <th style="width: 120px;">Total Borrows</th>
+                  <th style="width: 110px;">Active Loans</th>
+                  <th style="width: 110px;">Titles Count</th>
+                  <th style="min-width: 160px;">Borrow Share</th>
+                  <th>Top Title</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for g in top_genres[:7] %}
+                <tr>
+                  <td>
+                    {% if g.rank == 1 %}<i class="bi bi-trophy-fill"></i> 1{% elif g.rank == 2 %}<i class="bi bi-award-fill"></i> 2{% elif g.rank == 3 %}<i class="bi bi-award"></i> 3{% else %}#{{ g.rank }}{% endif %}
+                  </td>
+                  <td><span class="genre-pill-tag">{{ g.genre }}</span></td>
+                  <td><strong>{{ g.borrow_count }}</strong></td>
+                  <td>{% if g.active_loans > 0 %}<span class="badge-loan-active">{{ g.active_loans }} active</span>{% else %}0{% endif %}</td>
+                  <td>{{ g.title_count }} titles</td>
+                  <td>
+                    <div class="sheet-share-metric">
+                      <div class="sheet-progress-bar"><div class="sheet-progress-fill" style="width: {{ g.share_percent }}%;"></div></div>
+                      <span class="sheet-share-label">{{ g.share_percent }}%</span>
+                    </div>
+                  </td>
+                  <td><em>{{ g.top_title }}</em></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="staff-empty">No genre borrowing records yet</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sheet 2: Top Book Types -->
+        <div class="dash-sheet-panel" id="dash-sheet-types" style="display: none;">
+          <div class="staff-table-scroll">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Rank</th>
+                  <th>Book Type / Category</th>
+                  <th style="width: 120px;">Total Borrows</th>
+                  <th style="width: 110px;">Active Loans</th>
+                  <th style="width: 110px;">Titles in Stock</th>
+                  <th style="width: 110px;">Total Copies</th>
+                  <th style="min-width: 160px;">Volume Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in top_types %}
+                <tr>
+                  <td>
+                    {% if t.rank == 1 %}<i class="bi bi-trophy-fill"></i> 1{% elif t.rank == 2 %}<i class="bi bi-award-fill"></i> 2{% elif t.rank == 3 %}<i class="bi bi-award"></i> 3{% else %}#{{ t.rank }}{% endif %}
+                  </td>
+                  <td><strong>{{ t.book_type }}</strong></td>
+                  <td><strong>{{ t.borrow_count }}</strong></td>
+                  <td>{% if t.active_loans > 0 %}<span class="badge-loan-active">{{ t.active_loans }} on loan</span>{% else %}0{% endif %}</td>
+                  <td>{{ t.total_titles }}</td>
+                  <td>{{ t.total_copies }}</td>
+                  <td>
+                    <div class="sheet-share-metric">
+                      <div class="sheet-progress-bar"><div class="sheet-progress-fill" style="width: {{ t.share_percent }}%;"></div></div>
+                      <span class="sheet-share-label">{{ t.share_percent }}%</span>
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="staff-empty">No book type data available</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sheet 3: Book Borrowing Rankings -->
+        <div class="dash-sheet-panel" id="dash-sheet-rankings" style="display: none;">
+          <div class="staff-table-scroll">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Rank</th>
+                  <th style="width: 50px;">Cover</th>
+                  <th>Title &amp; Author</th>
+                  <th style="width: 120px;">Category</th>
+                  <th>Genre Tags</th>
+                  <th style="width: 110px;">Total Borrows</th>
+                  <th style="width: 130px;">Availability</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for b in book_rankings[:8] %}
+                <tr>
+                  <td>
+                    {% if b.rank == 1 %}<i class="bi bi-trophy-fill"></i> 1{% elif b.rank == 2 %}<i class="bi bi-award-fill"></i> 2{% elif b.rank == 3 %}<i class="bi bi-award"></i> 3{% else %}#{{ b.rank }}{% endif %}
+                  </td>
+                  <td><img class="sheet-book-thumb" src="{{ b.cover|cover_src }}" alt="" style="width: 36px; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px;"></td>
+                  <td>
+                    <a class="staff-title-link" href="{{ url_for('librarian_edit_title', media_id=b.media_id) }}"><strong>{{ b.title }}</strong></a>
+                    <div style="font-size: 11px; color: var(--muted);">{{ b.author }}</div>
+                  </td>
+                  <td><span class="category-tag-cell">{{ b.category }}</span></td>
+                  <td>
+                    <div class="sheet-genres-wrap">
+                      {% for g in b.genres %}
+                        <span class="genre-pill-tag small">{{ g }}</span>
+                      {% else %}—{% endfor %}
+                    </div>
+                  </td>
+                  <td><strong class="borrow-count-badge">{{ b.borrow_count }}</strong></td>
+                  <td>
+                    {% if b.available > 0 %}
+                      <span class="stock-available">{{ b.available }} / {{ b.copies }} avail</span>
+                    {% else %}
+                      <span class="stock-empty">0 / {{ b.copies }} on loan</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="staff-empty">No catalog rankings available</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div class="staff-panels" style="margin-top: 24px;">
         <section class="staff-card" id="members"><div class="staff-card-head"><div><h2>Members list</h2><p>Most recently registered members</p></div><a class="staff-small-action" href="{{ url_for('librarian_members') }}">View all</a></div><div class="staff-table-scroll"><table class="staff-table"><thead><tr><th>Member</th><th>Username</th><th>On loan</th><th>Joined</th></tr></thead><tbody>{% for member in members %}<tr><td><span class="member-name"><span class="member-avatar" aria-hidden="true">{{ member.full_name[:1]|upper }}</span>{{ member.full_name }}</span></td><td>{{ member.username }}</td><td>{{ member.borrowed }}</td><td>{{ member.registered_at[:10] }}</td></tr>{% else %}<tr><td colspan="4" class="staff-empty">No members yet</td></tr>{% endfor %}</tbody></table></div></section>
-        <section class="staff-card" id="catalog"><div class="staff-card-head"><div><h2>Books list</h2><p>Titles and available copies</p></div><label class="staff-search staff-inline-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search books list</span><input type="search" placeholder="Search books or authors" data-table-filter></label></div><div class="staff-table-scroll"><table class="staff-table" data-filter-table><thead><tr><th>Title</th><th>Author</th><th>Available</th><th>Action</th></tr></thead><tbody>{% for work in works %}<tr><td><a class="staff-title-link" href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}">{{ work.title }}</a></td><td>{{ work.author }}</td><td>{{ work.available }} / {{ work.copies }}</td><td><a class="staff-row-action" href="{{ url_for('librarian_add_copy', media_id=work.media_id) }}">＋ Copy</a></td></tr>{% else %}<tr><td colspan="4" class="staff-empty">No titles yet</td></tr>{% endfor %}</tbody></table></div></section>
+        <section class="staff-card" id="catalog"><div class="staff-card-head"><div><h2>Books list</h2><p>Titles and available copies</p></div><label class="staff-search staff-inline-search"><i class="bi bi-search" aria-hidden="true"></i><span class="sr-only">Search books list</span><input type="search" placeholder="Search books or authors" data-table-filter></label></div><div class="staff-table-scroll"><table class="staff-table" data-filter-table><thead><tr><th>Title</th><th>Author</th><th>Available</th><th>Action</th></tr></thead><tbody>{% for work in works %}<tr><td><a class="staff-title-link" href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}">{{ work.title }}</a></td><td>{{ work.author }}</td><td>{{ work.available }} / {{ work.copies }}</td><td><a class="staff-row-action" href="{{ url_for('librarian_add_copy', media_id=work.media_id) }}"><i class="bi bi-plus-lg"></i> Copy</a></td></tr>{% else %}<tr><td colspan="4" class="staff-empty">No titles yet</td></tr>{% endfor %}</tbody></table></div></section>
       </div>
-      <section class="staff-choices" aria-labelledby="staff-choices-title"><div class="staff-choices-head"><div><span class="staff-kicker">THE COLLECTION</span><h2 id="staff-choices-title">Books in the library</h2></div><a href="{{ url_for('librarian_books') }}">View all <span aria-hidden="true">↗</span></a></div><div class="staff-books">{% for work in works[:6] %}<a class="staff-book" href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}"><img src="{{ work.cover|cover_src }}" alt=""><strong>{{ work.title }}</strong><span>{{ work.author }}</span><small>{{ work.category }} · {{ work.available }} available</small></a>{% else %}<p class="staff-empty">Add books to see them here</p>{% endfor %}</div></section>
+      <section class="staff-choices" aria-labelledby="staff-choices-title"><div class="staff-choices-head"><div><span class="staff-kicker">THE COLLECTION</span><h2 id="staff-choices-title">Books in the library</h2></div><a href="{{ url_for('librarian_books') }}">View all <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div><div class="staff-books">{% for work in works[:6] %}<a class="staff-book" href="{{ url_for('librarian_edit_title', media_id=work.media_id) }}"><img src="{{ work.cover|cover_src }}" alt=""><strong>{{ work.title }}</strong><span>{{ work.author }}</span><small>{{ work.category }} · {{ work.available }} available</small></a>{% else %}<p class="staff-empty">Add books to see them here</p>{% endfor %}</div></section>
     </div>
   </div>
 </div>
+
+<script>
+  function switchDashSheet(key, btn) {
+    document.querySelectorAll('.dash-tab-btn').forEach(b => {
+      b.classList.remove('is-active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    btn.classList.add('is-active');
+    btn.setAttribute('aria-selected', 'true');
+
+    document.querySelectorAll('.dash-sheet-panel').forEach(p => {
+      p.style.display = 'none';
+      p.classList.remove('is-active');
+    });
+
+    const target = document.getElementById('dash-sheet-' + key);
+    if (target) {
+      target.style.display = 'block';
+      target.classList.add('is-active');
+    }
+  }
+</script>
 {% endblock %}

@@ -5,4 +5,7 @@ services:
       - "5001:5000"
     volumes:
       - ./instance:/app/instance
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LIBRARY_SECRET_KEY=reading-room-session-key-2026-prod
     restart: unless-stopped

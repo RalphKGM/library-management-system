@@ -42,6 +42,11 @@ def init_security(app):
             supplied = request.form.get("csrf_token", "") or request.headers.get("X-CSRF-Token", "")
             expected = session.get("csrf_token", "")
             if not expected or not secrets.compare_digest(supplied, expected):
+                if request.endpoint == "login":
+                    session["csrf_token"] = secrets.token_urlsafe(32)
+                    from flask import flash
+                    flash("Session expired or page reloaded. Please sign in again.", "error")
+                    return redirect(url_for("login"))
                 abort(400, "Invalid form token. Reload the page and try again.")
 
     @app.context_processor

@@ -10,7 +10,7 @@ from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from app.services.media import add_media
 
 
-WORK_KEY = re.compile(r"^/works/OL[0-9]+W$")
+WORK_KEY = re.compile(r"^(/works/OL[0-9]+W|/googlebooks/[A-Za-z0-9_\-]+)$")
 SEARCH_URL = "https://openlibrary.org/search.json"
 
 
@@ -55,6 +55,9 @@ def search_books(query):
         raise ConnectionError("Open Library is unavailable. Try again later or add the title manually.") from exc
     if not isinstance(payload, dict) or not isinstance(payload.get("docs"), list):
         raise ConnectionError("Open Library returned an unexpected response.")
+    
+    from app.services.google_books import draft_genre_tags_for_book
+
     results = []
     for doc in payload["docs"]:
         if not isinstance(doc, dict):
@@ -68,15 +71,30 @@ def search_books(query):
         cover_id = doc.get("cover_i")
         cover = f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if type(cover_id) is int and cover_id > 0 else "catalog-placeholder.svg"
         pages = doc.get("number_of_pages_median")
+        category = _category(doc)
+        subjects = doc.get("subject") if isinstance(doc.get("subject"), list) else []
+        genres = draft_genre_tags_for_book(
+            title=title,
+            author=author,
+            category=category,
+            subjects=subjects,
+            provider="openlibrary"
+        )
         data = {
             "source_key": key,
             "title": title.strip()[:300],
             "author": author[:300] or "Unknown author",
             "cover": cover,
             "total_units": pages if type(pages) is int and 0 < pages <= 100000 else None,
-            "category": _category(doc),
+            "category": category,
+            "genres": genres,
         }
-        results.append({**data, "first_publish_year": doc.get("first_publish_year"), "import_token": _signer().dumps(data)})
+        results.append({
+            **data,
+            "first_publish_year": doc.get("first_publish_year"),
+            "provider": "openlibrary",
+            "import_token": _signer().dumps(data)
+        })
     return results
 
 
@@ -86,12 +104,12 @@ def import_book(token, librarian_id):
     except (BadSignature, SignatureExpired, TypeError) as exc:
         raise ValueError("search result expired. Search again.") from exc
     if not isinstance(data, dict) or not WORK_KEY.fullmatch(str(data.get("source_key", ""))):
-        raise ValueError("invalid Open Library result")
+        raise ValueError("invalid book search result")
     from app.sample_catalog import CATEGORIES
 
     if data.get("category") not in CATEGORIES:
         raise ValueError("invalid category")
-    details = {name: data.get(name) for name in ("title", "author", "cover", "total_units")}
+    details = {name: data.get(name) for name in ("title", "author", "cover", "total_units", "genres") if name in data}
     details["category"] = data["category"]
     details["source_key"] = data["source_key"]
     return add_media(details, librarian_id)

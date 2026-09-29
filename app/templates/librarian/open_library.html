@@ -2,12 +2,92 @@
 {% block title %}Find titles · The Reading Room{% endblock %}
 {% block content %}
 <section class="librarian-page shell narrow-admin">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('librarian_books') }}">Books</a><span>/</span><span aria-current="page">Add new book</span></nav>
-  <div class="admin-heading"><div><span class="eyebrow">Open Library</span><h1>Add new book</h1><p>Find the book and add it with one physical copy. You can add more copies later.</p></div></div>
-  <form class="admin-form" method="get"><div class="field"><label for="q">Title or author</label><input id="q" name="q" type="search" value="{{ query }}" maxlength="120" required></div><div class="form-actions"><button class="button" type="submit"><span aria-hidden="true">⌕</span> Search books</button><a class="button button-secondary" href="{{ url_for('librarian_add_title') }}">Add manually</a></div></form>
-  {% if results %}<section class="admin-panel book-search-results"><div class="book-search-results-head"><h2>Search results</h2><p>Categories are suggested from Open Library subjects. You can edit a title after importing it.</p></div>
-    <div class="book-search-results-list">{% for book in results %}<article class="book-search-result"><img src="{{ book.cover|cover_src }}" alt=""><div class="book-search-result-info"><strong>{{ book.title }}</strong><span>{{ book.author }}{% if book.first_publish_year %} · {{ book.first_publish_year }}{% endif %}</span><span class="category-tag">{{ book.category }}</span></div><form method="post" action="{{ url_for('librarian_import_open_library') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="import_token" value="{{ book.import_token }}"><button class="button button-small" type="submit"><span aria-hidden="true">＋</span> Add book</button></form></article>{% endfor %}</div>
-  </section>{% elif query %}<div class="admin-empty">No matching titles found. You can add one manually.</div>{% endif %}
-  <p class="field-help">Book information and covers from <a href="https://openlibrary.org/">Open Library</a>. A search result does not mean our library owns a copy.</p>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('librarian_books') }}">Books</a>
+    <span>/</span>
+    <span aria-current="page">Add new book</span>
+  </nav>
+
+  <div class="admin-heading">
+    <div>
+      <span class="eyebrow">Catalog Ingestion</span>
+      <h1>Add new book</h1>
+      <p>Search external book repositories to import catalog metadata with physical copies. Use Open Library as primary or toggle to Google Books.</p>
+    </div>
+  </div>
+
+  <form class="admin-form" method="get">
+    <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 1rem; margin-bottom: 1rem;">
+      <div class="field" style="margin-bottom: 0;">
+        <label for="provider">Metadata API Provider</label>
+        <select id="provider" name="provider" class="select-field" style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--border, #cbd5e1); padding: 0 0.75rem; background: var(--surface, #fff); font-size: 0.95rem; font-weight: 600; color: var(--text, #1e293b);">
+          <option value="openlibrary" {% if provider != 'googlebooks' %}selected{% endif %}>Open Library (Primary API)</option>
+          <option value="googlebooks" {% if provider == 'googlebooks' %}selected{% endif %}>Google Books (Secondary API)</option>
+        </select>
+      </div>
+
+      <div class="field" style="margin-bottom: 0;">
+        <label for="q">Title or author</label>
+        <input id="q" name="q" type="search" value="{{ query }}" maxlength="120" placeholder="e.g. Chainsaw Man, Dune, Batman..." required style="height: 42px;">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="button" type="submit">
+        <i class="bi bi-search" aria-hidden="true"></i> Search {% if provider == 'googlebooks' %}Google Books{% else %}Open Library{% endif %}
+      </button>
+      <a class="button button-secondary" href="{{ url_for('librarian_add_title') }}">Add manually</a>
+    </div>
+  </form>
+
+  {% if results %}
+  <section class="admin-panel book-search-results">
+    <div class="book-search-results-head">
+      <h2>Search results ({{ results|length }})</h2>
+      <p>
+        Sourced via <strong>{% if provider == 'googlebooks' %}Google Books API (Secondary){% else %}Open Library API (Primary){% endif %}</strong>. 
+        Genre tags are automatically drafted from volume taxonomies and subjects.
+      </p>
+    </div>
+    <div class="book-search-results-list">
+      {% for book in results %}
+      <article class="book-search-result">
+        <img src="{{ book.cover|cover_src }}" alt="">
+        <div class="book-search-result-info">
+          <strong>{{ book.title }}</strong>
+          <span>{{ book.author }}{% if book.first_publish_year %} · {{ book.first_publish_year }}{% endif %}</span>
+          
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
+            <span class="category-tag">{{ book.category }}</span>
+            <span style="font-size: 0.75rem; font-weight: 600; padding: 2px 7px; border-radius: 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb;">
+              {% if book.provider == 'googlebooks' %}Google Books{% else %}Open Library{% endif %}
+            </span>
+            {% for g in book.genres %}
+              <span class="genre-pill-tag" style="font-size: 0.72rem; padding: 2px 7px;">{{ g }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <form method="post" action="{{ url_for('librarian_import_open_library') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="import_token" value="{{ book.import_token }}">
+          <button class="button button-small" type="submit"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add book</button>
+        </form>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% elif query %}
+  <div class="admin-empty">No matching titles found on {% if provider == 'googlebooks' %}Google Books{% else %}Open Library{% endif %}. Try toggling the API provider above or add the book manually.</div>
+  {% endif %}
+
+  <p class="field-help">
+    Metadata and covers powered by 
+    {% if provider == 'googlebooks' %}
+      <a href="https://books.google.com/" target="_blank" rel="noopener">Google Books API</a> (Secondary Provider).
+    {% else %}
+      <a href="https://openlibrary.org/" target="_blank" rel="noopener">Open Library</a> (Primary Provider).
+    {% endif %}
+    A search result does not imply our physical library holds a copy until imported.
+  </p>
 </section>
 {% endblock %}

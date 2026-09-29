@@ -18,6 +18,8 @@ from app.services.reading import (
 
 
 def _catalog():
+    from app.services.media import get_media_genres_map
+    genres_map = get_media_genres_map()
     rows = get_db().execute(
         "SELECT m.*, COUNT(c.copy_id) AS copies, "
         "COUNT(c.copy_id) - COUNT(b.borrowing_id) AS available "
@@ -34,6 +36,7 @@ def _catalog():
             ("s" if item["total_units"] != 1 else "")
             if item["total_units"] else None
         )
+        item["genres"] = genres_map.get(item["media_id"], [])
         works.append(item)
     return works
 
@@ -120,9 +123,12 @@ def register_ui(app):
         sort = request.args.get("sort", "title")
         filtered = [
             work for work in works
-            if (not query or query in work["title"].casefold()
+            if (not query
+                or query in work["title"].casefold()
                 or query in work["author"].casefold()
-                or query in work["category"].casefold())
+                or query in work["category"].casefold()
+                or query in (work.get("description") or "").casefold()
+                or any(query in g.casefold() for g in work.get("genres", [])))
             and (not category or work["category"] == category)
         ]
         if sort == "availability":
@@ -303,7 +309,40 @@ def register_ui(app):
             "SELECT (SELECT COUNT(*) FROM member) AS members, "
             "(SELECT COUNT(*) FROM borrowing_record WHERE returned_at IS NULL) AS on_loan"
         ).fetchone()
-        return render_template("librarian/index.html", works=_catalog(), members=members, totals=totals)
+
+        from app.services.analytics import (
+            get_top_genres_borrowed,
+            get_top_book_types_borrowed,
+            get_book_borrowing_rankings,
+            get_analytics_summary,
+        )
+        return render_template(
+            "librarian/index.html",
+            works=_catalog(),
+            members=members,
+            totals=totals,
+            top_genres=get_top_genres_borrowed(limit=10),
+            top_types=get_top_book_types_borrowed(),
+            book_rankings=get_book_borrowing_rankings(limit=25),
+            analytics_summary=get_analytics_summary(),
+        )
+
+    @app.get("/librarian/analytics")
+    @require_role("librarian")
+    def librarian_analytics():
+        from app.services.analytics import (
+            get_top_genres_borrowed,
+            get_top_book_types_borrowed,
+            get_book_borrowing_rankings,
+            get_analytics_summary,
+        )
+        return render_template(
+            "librarian/analytics.html",
+            top_genres=get_top_genres_borrowed(limit=25),
+            top_types=get_top_book_types_borrowed(),
+            book_rankings=get_book_borrowing_rankings(limit=50),
+            summary=get_analytics_summary(),
+        )
 
     @app.get("/librarian/books")
     @require_role("librarian")
@@ -350,13 +389,20 @@ def register_ui(app):
     @require_role("librarian")
     def librarian_open_library():
         query = request.args.get("q", "").strip()
+        provider = request.args.get("provider", "openlibrary").strip().lower()
+        if provider not in ("openlibrary", "googlebooks"):
+            provider = "openlibrary"
         results = []
         if query:
             try:
-                results = search_books(query)
+                if provider == "googlebooks":
+                    from app.services.google_books import search_google_books
+                    results = search_google_books(query)
+                else:
+                    results = search_books(query)
             except (ValueError, ConnectionError) as exc:
                 flash(str(exc), "error")
-        return render_template("librarian/open_library.html", query=query, results=results)
+        return render_template("librarian/open_library.html", query=query, results=results, provider=provider)
 
     @app.post("/librarian/open-library/import")
     @require_role("librarian")

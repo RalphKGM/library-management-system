@@ -76,3 +76,17 @@ CREATE TABLE IF NOT EXISTS notification (
 
 CREATE INDEX IF NOT EXISTS notification_inbox
 ON notification (recipient_role, recipient_id, read_at, notification_id DESC);
+
+CREATE TABLE IF NOT EXISTS genre (
+    genre_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS media_genre (
+    media_id INTEGER NOT NULL REFERENCES media_item(media_id) ON DELETE CASCADE,
+    genre_id INTEGER NOT NULL REFERENCES genre(genre_id) ON DELETE CASCADE,
+    PRIMARY KEY (media_id, genre_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_media_genre_genre ON media_genre (genre_id);

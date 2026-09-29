@@ -53,7 +53,9 @@ class LibraryWebsiteTests(unittest.TestCase):
         self.assertEqual(self.client.get("/librarian").status_code, 302)
         self.assertEqual(self.client.get("/api/media").status_code, 200)
         self.assertEqual(self.client.get("/api/borrowings").status_code, 401)
-        self.assertEqual(self.client.get("/api/health").json, {"status": "ok"})
+        health_data = self.client.get("/api/health").json
+        self.assertEqual(health_data["status"], "ok")
+        self.assertEqual(health_data["database"], "connected")
 
     def test_member_borrow_return_and_reading(self):
         response = self.register()
@@ -206,6 +208,112 @@ class LibraryWebsiteTests(unittest.TestCase):
         self.assertEqual(self.client.get(f"/api/media/{self.media_id}/progress").json["current_position"], 20)
         self.assertEqual(self.client.post(f"/api/borrowings/{borrowing.json['borrowing_id']}/return", headers={"X-CSRF-Token": token}).status_code, 200)
 
+    def test_genres_and_circulation_analytics_sheets(self):
+        # 1. Staff logs in
+        staff = self.app.test_client()
+        staff.post("/login", data={
+            "csrf_token": self.csrf(staff), "username": "staff", "password": "staff-password",
+        })
+
+        # 2. Add media with genres or auto-draft
+        token = self.csrf(staff)
+        res = staff.post("/librarian/titles/new", data={
+            "csrf_token": token, "title": "Cyberpunk Chronicles", "author": "K. Neo",
+            "category": "Manga", "progress_unit": "chapter", "total_units": "50",
+            "description": "A dark cyberpunk sci-fi thriller about hackers and neon alleyways.",
+        })
+        self.assertEqual(res.status_code, 302)
+
+        with self.app.app_context():
+            from app.services.media import get_media_genres
+            m_id = get_db().execute("SELECT media_id FROM media_item WHERE title = 'Cyberpunk Chronicles'").fetchone()[0]
+            genres = get_media_genres(m_id)
+            self.assertTrue(len(genres) > 0)
+            self.assertTrue(any(g in ("Manga", "Sci-Fi", "Cyberpunk", "Thriller", "Action") for g in genres))
+
+            # Add copy and borrow
+            copy_res = staff.post(f"/librarian/titles/{m_id}/copies/new", data={
+                "csrf_token": token, "quantity": "2",
+            })
+            self.assertEqual(copy_res.status_code, 302)
+            c_id = get_db().execute("SELECT copy_id FROM media_copy WHERE media_id = ?", (m_id,)).fetchone()[0]
+
+        # 3. Member borrows this cyberpunk manga
+        self.register("manga-fan")
+        mem_token = self.csrf()
+        borrow_res = self.client.post("/api/borrowings", json={"copy_id": c_id}, headers={"X-CSRF-Token": mem_token})
+        self.assertEqual(borrow_res.status_code, 201)
+
+        # 4. Staff checks dashboard sheets
+        dash = staff.get("/librarian")
+        self.assertEqual(dash.status_code, 200)
+        self.assertIn(b"Circulation &amp; Popularity Sheets", dash.data)
+        self.assertIn(b"Top Genres Borrowed", dash.data)
+        self.assertIn(b"Top Book Types", dash.data)
+        self.assertIn(b"Book Borrowing Rankings", dash.data)
+        self.assertIn(b"Cyberpunk Chronicles", dash.data)
+
+        # 5. Staff checks dedicated /librarian/analytics page
+        analytics_page = staff.get("/librarian/analytics")
+        self.assertEqual(analytics_page.status_code, 200)
+        self.assertIn(b"Staff Analytics <em>Sheets</em>", analytics_page.data)
+        self.assertIn(b"Top Genres Borrowed", analytics_page.data)
+        self.assertIn(b"Top Book Types &amp; Categories Borrowed", analytics_page.data)
+        self.assertIn(b"Book Borrowing Leaderboard Rankings", analytics_page.data)
+        self.assertIn(b"Cyberpunk Chronicles", analytics_page.data)
+
+        # Member should be denied access to /librarian/analytics
+        self.assertEqual(self.client.get("/librarian/analytics").status_code, 403)
+
+        # 6. Check REST analytics endpoints
+        staff_api_token = staff.get("/api/session").json["csrf_token"]
+        top_genres = staff.get("/api/analytics/top-genres", headers={"X-CSRF-Token": staff_api_token})
+        self.assertEqual(top_genres.status_code, 200)
+        self.assertIsInstance(top_genres.json, list)
+        self.assertTrue(len(top_genres.json) > 0)
+
+        top_types = staff.get("/api/analytics/top-book-types", headers={"X-CSRF-Token": staff_api_token})
+        self.assertEqual(top_types.status_code, 200)
+        self.assertIsInstance(top_types.json, list)
+
+        book_rankings = staff.get("/api/analytics/book-rankings", headers={"X-CSRF-Token": staff_api_token})
+        self.assertEqual(book_rankings.status_code, 200)
+        self.assertIsInstance(book_rankings.json, list)
+        self.assertEqual(book_rankings.json[0]["title"], "Cyberpunk Chronicles")
+        self.assertEqual(book_rankings.json[0]["borrow_count"], 1)
+
+    def test_librarian_open_library_with_provider_dropdown_toggle(self):
+        staff = self.librarian_client()
+        # 1. Access page and verify dropdown toggle elements
+        res = staff.get("/librarian/open-library")
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'id="provider"', res.data)
+        self.assertIn(b"Open Library (Primary API)", res.data)
+        self.assertIn(b"Google Books (Secondary API)", res.data)
+
+        # 2. Search using Google Books secondary provider
+        mock_results = [
+            {
+                "source_key": "/googlebooks/testvol123",
+                "title": "Chainsaw Demon",
+                "author": "Tatsuki Fujimoto",
+                "cover": "catalog-placeholder.svg",
+                "total_units": 190,
+                "category": "Manga",
+                "genres": ["Manga", "Action", "Supernatural"],
+                "first_publish_year": 2018,
+                "provider": "googlebooks",
+                "import_token": "mocked-token-for-test"
+            }
+        ]
+        with unittest.mock.patch("app.services.google_books.search_google_books", return_value=mock_results):
+            gb_res = staff.get("/librarian/open-library?q=Chainsaw&provider=googlebooks")
+            self.assertEqual(gb_res.status_code, 200)
+            self.assertIn(b"Chainsaw Demon", gb_res.data)
+            self.assertIn(b"Google Books", gb_res.data)
+            self.assertIn(b"Supernatural", gb_res.data)
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -8,6 +8,13 @@
     <div class="detail-main">
       <div class="detail-kicker"><span>{{ work.category }}</span>{% if work.volume %}<span>{{ work.volume }}</span>{% endif %}</div>
       <h1>{{ work.title }}</h1><p class="detail-author">by {{ work.author }}</p>
+      {% if work.genres %}
+      <div class="detail-genres" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; margin-bottom: 12px;">
+        {% for g in work.genres %}
+          <span class="genre-pill-tag">{{ g }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
       {% if work.description %}<p class="detail-description">{{ work.description }}</p>{% endif %}{% if work.source_key %}<p class="field-help">Book details and cover from <a href="https://openlibrary.org{{ work.source_key }}">Open Library</a></p>{% endif %}
       <dl class="detail-facts"><div><dt>Copies</dt><dd>{{ work.available }} available of {{ work.copies }}</dd></div>{% if work.length %}<div><dt>Length</dt><dd>{{ work.length }}</dd></div>{% endif %}<div><dt>Format</dt><dd>Physical copy</dd></div></dl>
       <div class="borrow-panel" id="borrow-panel">

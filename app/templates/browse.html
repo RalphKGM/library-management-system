@@ -47,7 +47,7 @@
     <div class="field grow"><label for="q">Search</label><input id="q" name="q" type="search" value="{{ query }}" placeholder="Title, author, category"></div>
     <div class="field"><label for="category">Category</label><select id="category" name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category }}" {% if active_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></div>
     <div class="field"><label for="sort">Sort</label><select id="sort" name="sort"><option value="title" {% if sort == 'title' %}selected{% endif %}>Title A–Z</option><option value="availability" {% if sort == 'availability' %}selected{% endif %}>Availability</option><option value="recent" {% if sort == 'recent' %}selected{% endif %}>Recently added</option></select></div>
-    <button class="button toolbar-button" type="submit"><span aria-hidden="true">⌕</span> Show results</button>
+    <button class="button toolbar-button" type="submit"><i class="bi bi-search" aria-hidden="true"></i> Show results</button>
   </form>
   {% if filtered %}<div class="cover-grid catalog-grid">{% for work in filtered %}{% include "partials/_cover_card.html" %}{% endfor %}</div>{% else %}{% if works %}{% set title='No titles found' %}{% set body='Try a broader search or choose a different category.' %}{% set href=url_for('browse') %}{% set action='Clear filters' %}{% else %}{% set title='The shelves are being prepared' %}{% set body='New titles will appear here soon.' %}{% set href=None %}{% set action=None %}{% endif %}{% include 'partials/_empty_state.html' %}{% endif %}
 </section>

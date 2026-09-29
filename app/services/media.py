@@ -42,9 +42,68 @@ def _cover_options():
     return {path.name for path in (Path(__file__).resolve().parents[1] / "static/images/covers").glob("*.svg")}
 
 
+def get_or_create_genre(name):
+    name = name.strip()
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    if not slug:
+        slug = "genre"
+    db = get_db()
+    row = db.execute("SELECT genre_id, name, slug FROM genre WHERE name = ? COLLATE NOCASE", (name,)).fetchone()
+    if row:
+        return dict(row)
+    try:
+        cursor = db.execute("INSERT INTO genre (name, slug) VALUES (?, ?)", (name, slug))
+        db.commit()
+        return {"genre_id": cursor.lastrowid, "name": name, "slug": slug}
+    except sqlite3.IntegrityError:
+        row = db.execute("SELECT genre_id, name, slug FROM genre WHERE slug = ?", (slug,)).fetchone()
+        return dict(row) if row else {"genre_id": 1, "name": name, "slug": slug}
+
+
+def set_media_genres(media_id, genre_names):
+    if not isinstance(genre_names, (list, tuple, set)):
+        return []
+    db = get_db()
+    db.execute("DELETE FROM media_genre WHERE media_id = ?", (media_id,))
+    assigned = []
+    for g_name in genre_names:
+        if not g_name or not isinstance(g_name, str):
+            continue
+        g = get_or_create_genre(g_name)
+        try:
+            db.execute("INSERT OR IGNORE INTO media_genre (media_id, genre_id) VALUES (?, ?)", (media_id, g["genre_id"]))
+            assigned.append(g["name"])
+        except sqlite3.IntegrityError:
+            pass
+    db.commit()
+    return assigned
+
+
+def get_media_genres(media_id):
+    db = get_db()
+    rows = db.execute(
+        "SELECT g.name FROM genre g JOIN media_genre mg ON mg.genre_id = g.genre_id WHERE mg.media_id = ? ORDER BY g.name",
+        (media_id,)
+    ).fetchall()
+    return [r[0] for r in rows]
+
+
+def get_media_genres_map():
+    db = get_db()
+    rows = db.execute(
+        "SELECT mg.media_id, g.name FROM genre g JOIN media_genre mg ON mg.genre_id = g.genre_id ORDER BY g.name"
+    ).fetchall()
+    result = {}
+    for r in rows:
+        result.setdefault(r[0], []).append(r[1])
+    return result
+
+
 def add_media(details, librarian_id):
     require_librarian(librarian_id)
-    data = _validate(dict(details))
+    input_details = dict(details)
+    genre_names = input_details.pop("genres", None)
+    data = _validate(input_details)
     for field in ("title", "author", "category"):
         if field not in data:
             raise ValueError(f"{field} is required")
@@ -57,13 +116,29 @@ def add_media(details, librarian_id):
         db.commit()
     except sqlite3.IntegrityError as exc:
         raise ValueError("this Open Library title is already in the catalog") from exc
-    return dict(db.execute("SELECT * FROM media_item WHERE media_id = ?", (cursor.lastrowid,)).fetchone())
+
+    media_id = cursor.lastrowid
+    if genre_names is None:
+        try:
+            from app.services.google_books import draft_genre_tags_for_book
+            genre_names = draft_genre_tags_for_book(
+                data["title"], data.get("author", ""), data.get("category", ""), data.get("description", "")
+            )
+        except Exception:
+            genre_names = [data["category"]]
+    assigned_genres = set_media_genres(media_id, genre_names)
+
+    item = dict(db.execute("SELECT * FROM media_item WHERE media_id = ?", (media_id,)).fetchone())
+    item["genres"] = assigned_genres
+    return item
 
 
 def update_media(media_id, changes, librarian_id):
     require_librarian(librarian_id)
-    data = _validate(dict(changes))
-    if not data:
+    input_changes = dict(changes)
+    genre_names = input_changes.pop("genres", None)
+    data = _validate(input_changes) if input_changes else {}
+    if not data and genre_names is None:
         raise ValueError("no changes supplied")
     if "source_key" in data:
         raise ValueError("Open Library source cannot be changed")
@@ -79,10 +154,15 @@ def update_media(media_id, changes, librarian_id):
         ).fetchone()[0]
         if highest is not None and data["total_units"] < highest:
             raise ValueError("total units cannot be below saved reading positions")
-    columns = ", ".join(f"{key} = ?" for key in data)
-    db.execute(f"UPDATE media_item SET {columns} WHERE media_id = ?", (*data.values(), media_id))
-    db.commit()
-    return dict(db.execute("SELECT * FROM media_item WHERE media_id = ?", (media_id,)).fetchone())
+    if data:
+        columns = ", ".join(f"{key} = ?" for key in data)
+        db.execute(f"UPDATE media_item SET {columns} WHERE media_id = ?", (*data.values(), media_id))
+        db.commit()
+    if genre_names is not None:
+        set_media_genres(media_id, genre_names)
+    item = dict(db.execute("SELECT * FROM media_item WHERE media_id = ?", (media_id,)).fetchone())
+    item["genres"] = get_media_genres(media_id)
+    return item
 
 
 def search_media(query="", category=None):

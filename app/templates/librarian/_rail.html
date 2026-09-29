@@ -1,12 +1,13 @@
 <aside class="staff-rail" aria-label="Staff navigation">
   <a class="rail-logo" href="{{ url_for('librarian') }}" aria-label="The Reading Room dashboard">R</a>
   <nav>
-    <a class="rail-link {% if request.endpoint == 'librarian' %}is-active{% endif %}" href="{{ url_for('librarian') }}" aria-label="Dashboard" title="Dashboard"><span aria-hidden="true">▦</span></a>
-    <a class="rail-link {% if request.endpoint == 'librarian_books' %}is-active{% endif %}" href="{{ url_for('librarian_books') }}" aria-label="Books" title="Books"><span aria-hidden="true">▤</span></a>
-    <a class="rail-link {% if request.endpoint == 'librarian_members' %}is-active{% endif %}" href="{{ url_for('librarian_members') }}" aria-label="Members" title="Members"><span aria-hidden="true">♙</span></a>
-    <a class="rail-link {% if request.endpoint == 'librarian_loans' %}is-active{% endif %}" href="{{ url_for('librarian_loans') }}" aria-label="Loans" title="Loans"><span aria-hidden="true">⇄</span></a>
-    <a class="rail-link {% if request.endpoint == 'librarian_copies' %}is-active{% endif %}" href="{{ url_for('librarian_copies') }}" aria-label="Physical copies" title="Physical copies"><span aria-hidden="true">▣</span></a>
-    <a class="rail-link {% if request.endpoint == 'settings' %}is-active{% endif %}" href="{{ url_for('settings') }}" aria-label="Settings" title="Settings"><span aria-hidden="true">⚙</span></a>
+    <a class="rail-link {% if request.endpoint == 'librarian' %}is-active{% endif %}" href="{{ url_for('librarian') }}" aria-label="Dashboard" title="Dashboard"><i class="bi bi-grid-fill" aria-hidden="true"></i></a>
+    <a class="rail-link {% if request.endpoint == 'librarian_books' %}is-active{% endif %}" href="{{ url_for('librarian_books') }}" aria-label="Books" title="Books"><i class="bi bi-book-half" aria-hidden="true"></i></a>
+    <a class="rail-link {% if request.endpoint == 'librarian_members' %}is-active{% endif %}" href="{{ url_for('librarian_members') }}" aria-label="Members" title="Members"><i class="bi bi-people-fill" aria-hidden="true"></i></a>
+    <a class="rail-link {% if request.endpoint == 'librarian_loans' %}is-active{% endif %}" href="{{ url_for('librarian_loans') }}" aria-label="Loans" title="Loans"><i class="bi bi-arrow-left-right" aria-hidden="true"></i></a>
+    <a class="rail-link {% if request.endpoint == 'librarian_analytics' %}is-active{% endif %}" href="{{ url_for('librarian_analytics') }}" aria-label="Circulation Analytics Sheets" title="Circulation Analytics Sheets"><i class="bi bi-bar-chart-fill" aria-hidden="true"></i></a>
+    <a class="rail-link {% if request.endpoint == 'librarian_copies' %}is-active{% endif %}" href="{{ url_for('librarian_copies') }}" aria-label="Physical copies" title="Physical copies"><i class="bi bi-journals" aria-hidden="true"></i></a>
+    <a class="rail-link {% if request.endpoint == 'settings' %}is-active{% endif %}" href="{{ url_for('settings') }}" aria-label="Settings" title="Settings"><i class="bi bi-gear-fill" aria-hidden="true"></i></a>
   </nav>
-  <form class="rail-logout" action="{{ url_for('logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="rail-link" type="submit" aria-label="Sign out" title="Sign out"><span aria-hidden="true">↪</span></button></form>
+  <form class="rail-logout" action="{{ url_for('logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="rail-link" type="submit" aria-label="Sign out" title="Sign out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button></form>
 </aside>

@@ -7,19 +7,25 @@ from flask import Flask, url_for
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
-    secret_file = Path(app.instance_path) / "session.key"
-    secret_file.parent.mkdir(parents=True, exist_ok=True)
-    if not secret_file.exists():
+    secret_key = os.environ.get("LIBRARY_SECRET_KEY")
+    if not secret_key:
+        secret_file = Path(app.instance_path) / "session.key"
         try:
-            descriptor = os.open(secret_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        except FileExistsError:
-            pass
-        else:
-            with os.fdopen(descriptor, "w") as stream:
-                stream.write(secrets.token_hex(32))
+            secret_file.parent.mkdir(parents=True, exist_ok=True)
+            if secret_file.exists():
+                secret_key = secret_file.read_text(encoding="utf-8").strip()
+            if not secret_key:
+                secret_key = secrets.token_hex(32)
+                try:
+                    secret_file.write_text(secret_key, encoding="utf-8")
+                except Exception:
+                    pass
+        except Exception:
+            secret_key = "the-reading-room-session-fallback-secret-2026"
+
     app.config.from_mapping(
         DATABASE=str(Path(app.instance_path) / "library.sqlite3"),
-        SECRET_KEY=os.environ.get("LIBRARY_SECRET_KEY") or secret_file.read_text().strip(),
+        SECRET_KEY=secret_key or secrets.token_hex(32),
     )
 
     if test_config:
